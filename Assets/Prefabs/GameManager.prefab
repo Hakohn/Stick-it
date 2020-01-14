@@ -43,7 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98f78f8ee94432d459fc3bbb92d292f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseMenu: {fileID: 0}
   GameIsPaused: 0
   destructibleTile: {fileID: 11400000, guid: 34aee7ea11d9a214eaef4ef65c66d385, type: 2}
   marginTile: {fileID: 11400000, guid: 19cbc08ae5b4e604c86475350aa7b80a, type: 2}
@@ -58,5 +57,6 @@ MonoBehaviour:
   - MP_Normal
   - MP_Large
   multiplayerScenePrefix: MP_
+  menuScene: MENU_Main
   menuScenePrefix: MENU_
   MPPlayerCount: 2

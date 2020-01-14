@@ -13,7 +13,7 @@ public class KillTrigger : MonoBehaviour
 
             if (collision.name == Owner)
             {
-                collision.GetComponent<PlayerStats>().committedSuicide = true;
+                collision.GetComponent<ParticipantStats>().committedSuicide = true;
             }
         }
         // If it is a buff, it will also be killed, but in a different method than the player.

@@ -10,12 +10,12 @@ PrefabInstance:
     - target: {fileID: 9197902037200414967, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
       propertyPath: m_Name
-      value: Player_Yellow
+      value: Participant_Red
       objectReference: {fileID: 0}
     - target: {fileID: 9197902037200414967, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
       propertyPath: m_TagString
-      value: Team_Yellow
+      value: Team_Red
       objectReference: {fileID: 0}
     - target: {fileID: 5460321146105448911, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
@@ -75,19 +75,18 @@ PrefabInstance:
     - target: {fileID: 5136807962066259257, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
       propertyPath: playerNumber
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6470381167915120291, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 22100000, guid: 71fe5514d9aa3a9438d0839d28f2ccb6,
-        type: 2}
+      objectReference: {fileID: 9100000, guid: 80f4049ae0e271d48b463a36d73c2a3d, type: 2}
     - target: {fileID: 5927913699365408565, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 46b4405a76674a542b0ff5261a4cb006,
+      objectReference: {fileID: 21300000, guid: f9e896245602e1a409b31f6651518d4b,
         type: 3}
     - target: {fileID: 5927913699365408565, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}

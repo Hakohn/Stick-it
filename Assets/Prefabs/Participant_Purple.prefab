@@ -10,7 +10,7 @@ PrefabInstance:
     - target: {fileID: 9197902037200414967, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}
       propertyPath: m_Name
-      value: Player_Purple
+      value: Participant_Purple
       objectReference: {fileID: 0}
     - target: {fileID: 9197902037200414967, guid: a991981e6e4c2cd429cb83209ffc326e,
         type: 3}

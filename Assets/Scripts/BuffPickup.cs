@@ -12,7 +12,7 @@ public class BuffPickup : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         // If it is not null, it means the one who hit the collider is a player, and so will pickup the buff
-        if (collision.GetComponent<PlayerStats>() != null)
+        if (collision.GetComponent<ParticipantStats>() != null)
         {
             Instantiate(buffTimerPrefab, collision.transform);
             pickedUpByPlayer = true;

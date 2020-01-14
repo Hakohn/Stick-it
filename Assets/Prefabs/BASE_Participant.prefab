@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 2885329169386102329}
   - component: {fileID: 5136807962066259257}
   m_Layer: 8
-  m_Name: BASE_Player
+  m_Name: BASE_Participant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,6 +63,7 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -165,7 +166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementMethod: 1
-  CurrentMovementSpeed: 0
+  DefaultMovementSpeed: 3
   blockingLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -222,13 +223,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 138f74e40632bcd4ba877f33fa1e5a18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsInvulnerable: 0
   IsAlive: 1
   deathSound:
     clip: {fileID: 8300000, guid: ff7d22557d5481742a126f68c5c8d6a7, type: 3}
     source: {fileID: 0}
     volume: 0.5
     loop: 0
-  playerNumber: 1
+  participantNumber: 0
   suicideSound:
     clip: {fileID: 8300000, guid: 0102f0e55ea11d043ac9be83c168723c, type: 3}
     source: {fileID: 0}

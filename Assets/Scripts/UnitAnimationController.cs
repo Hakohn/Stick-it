@@ -4,12 +4,12 @@ public class UnitAnimationController : MonoBehaviour
 {
     private Animator animator;
     private UnitStats unitStats;
-    private PlayerMovementController movementController;
+    private ParticipantMovementController movementController;
 
     private void Start()
     {
         animator = GetComponent<Animator>();
-        movementController = GetComponent<PlayerMovementController>();
+        movementController = GetComponent<ParticipantMovementController>();
         unitStats = GetComponent<UnitStats>();
     }
 

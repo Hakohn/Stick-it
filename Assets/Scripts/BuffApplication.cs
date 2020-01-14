@@ -41,7 +41,7 @@ public class BuffApplication : MonoBehaviour
         switch (buffAction)
         {
             case BuffAction.INCREASE_BOMB_COUNT:
-                PlayerActionController bombPlacer = GetComponentInParent<PlayerActionController>();
+                ParticipantActionController bombPlacer = GetComponentInParent<ParticipantActionController>();
                 if (bombPlacer.MaximumBombCount < 8)
                     bombPlacer.MaximumBombCount++;
 
@@ -49,7 +49,7 @@ public class BuffApplication : MonoBehaviour
                 break;
 
             case BuffAction.INCREASE_BOMB_RADIUS:
-                PlayerActionController bombRadius = GetComponentInParent<PlayerActionController>();
+                ParticipantActionController bombRadius = GetComponentInParent<ParticipantActionController>();
                 if (bombRadius.explosionRadius < 5)
                     bombRadius.explosionRadius++;
 
@@ -57,22 +57,22 @@ public class BuffApplication : MonoBehaviour
                 break;
 
             case BuffAction.SPEED:
-                PlayerMovementController movementController1 = GetComponentInParent<PlayerMovementController>();
+                ParticipantMovementController movementController1 = GetComponentInParent<ParticipantMovementController>();
                 movementController1.CurrentMovementSpeed *= 2f;
                 break;
 
             case BuffAction.SLOW:
-                PlayerMovementController movementController2 = GetComponentInParent<PlayerMovementController>();
+                ParticipantMovementController movementController2 = GetComponentInParent<ParticipantMovementController>();
                 movementController2.CurrentMovementSpeed /= 2f;
                 break;
 
             case BuffAction.DENY_BOMB_PLACING:
-                PlayerActionController bombPlacer1 = GetComponentInParent<PlayerActionController>();
+                ParticipantActionController bombPlacer1 = GetComponentInParent<ParticipantActionController>();
                 bombPlacer1.canPlaceBombs = false;
                 break;
 
             case BuffAction.UNCONTROLLABLE_BOMB_PLACING:
-                PlayerActionController bombPlacer2 = GetComponentInParent<PlayerActionController>();
+                ParticipantActionController bombPlacer2 = GetComponentInParent<ParticipantActionController>();
                 // Wait a little before starting to place the uncontrollable bombs, so that the user won't get
                 // instantly killed when grabbing the debuff. Also, adds the waiting time to the lifetime, 
                 // so that it will not alter the total duration
@@ -102,22 +102,22 @@ public class BuffApplication : MonoBehaviour
             switch (buffAction)
             {
                 case BuffAction.SPEED:
-                    PlayerMovementController movementController1 = GetComponentInParent<PlayerMovementController>();
+                    ParticipantMovementController movementController1 = GetComponentInParent<ParticipantMovementController>();
                     movementController1.CurrentMovementSpeed = movementController1.DefaultMovementSpeed;
                     break;
 
                 case BuffAction.SLOW:
-                    PlayerMovementController movementController2 = GetComponentInParent<PlayerMovementController>();
+                    ParticipantMovementController movementController2 = GetComponentInParent<ParticipantMovementController>();
                     movementController2.CurrentMovementSpeed = movementController2.DefaultMovementSpeed;
                     break;
 
                 case BuffAction.DENY_BOMB_PLACING:
-                    PlayerActionController bombPlacer1 = GetComponentInParent<PlayerActionController>();
+                    ParticipantActionController bombPlacer1 = GetComponentInParent<ParticipantActionController>();
                     bombPlacer1.canPlaceBombs = true;
                     break;
 
                 case BuffAction.UNCONTROLLABLE_BOMB_PLACING:
-                    PlayerActionController bombPlacer2 = GetComponentInParent<PlayerActionController>();
+                    ParticipantActionController bombPlacer2 = GetComponentInParent<ParticipantActionController>();
                     bombPlacer2.UncontrollableBombPlacing = false;
                     break;
             }

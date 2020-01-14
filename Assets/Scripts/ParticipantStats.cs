@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class PlayerStats : UnitStats
+public class ParticipantStats : UnitStats
 {
-    [HideInInspector][Range(1, 4)] public int playerNumber;
+    [HideInInspector][Range(1, 4)] public int participantNumber;
     [SerializeField] private Sound suicideSound = null;
     [HideInInspector] public bool committedSuicide = false;
     private bool playedSuicideSound = false;

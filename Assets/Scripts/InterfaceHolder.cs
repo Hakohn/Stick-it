@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InterfaceHolder : MonoBehaviour
 {
@@ -100,6 +101,21 @@ public class InterfaceHolder : MonoBehaviour
     public void UpdateMenuButtonTextValue(string buttonName, string value)
     {
         UpdateMenuButtonTextValue(buttonName, value, false);
+    }
+
+    public void SetButtonInteractible(string buttonName, bool interactible = true)
+    {
+        foreach (TMPro.TextMeshProUGUI text in menuTextMeshes)
+        {
+            if (text.transform.parent.name.Contains(buttonName))
+            {
+                text.transform.parent.GetComponent<Button>().interactable = interactible;
+                return;
+            }
+        }
+
+        // If it reaches this point, it didn't find the text we were looking for
+        Debug.LogError(buttonName + " button was not found within the active menu!");
     }
 
     public void UpdateTimerValue(float value)

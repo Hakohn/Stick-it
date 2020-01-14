@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
 
     [Space][Space]
     // Player Variables
-    [SerializeField] private GameObject[] playerPrefabs = null;
+    [SerializeField] private GameObject[] participantPrefabs = null;
 
     [Space][Space]
     // Scene management variables
@@ -32,13 +32,15 @@ public class GameManager : MonoBehaviour
 
     [Space][Space]
     // Menu variables
-    [SerializeField][Range(2, 4)] private int MPPlayerCount = 2;
+    [SerializeField][Range(0, 4)] private int MPPlayerCount = 2;
+    [SerializeField][Range(0, 4)] private int MPAICount = 2;
+    private int MPParticipantCount => MPPlayerCount + MPAICount;
     private int MPSelectedMapIndex = 2;
     private int MPMatchDurationMinutes = 3;
 
     [Space][Space]
     // Current multiplayer match variables
-    private List<Transform> currentlyAlivePlayers = new List<Transform>();
+    private List<Transform> currentlyAliveParticipants = new List<Transform>();
     private float currentTimeRemaining = 0f;
     private float[] timeKeyMoments = { 0f, 10f, 30f, 60f * 1, 60f * 5, 60f * 15 };
     private int tKMIndex = 0;
@@ -107,32 +109,32 @@ public class GameManager : MonoBehaviour
         }
 
         // Clear the starting area for each player (the corners)
-        // Player 1 <Top left>
-        if (MPPlayerCount >= 1)
+        // Participant 1 <Top left>
+        if (MPParticipantCount >= 1)
         {
             interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.max.y - 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 2, playableArea.max.y - 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.max.y - 2, 0), null);
         }
 
-        // Player 2 <Bottom right>
-        if (MPPlayerCount >= 2)
+        // Participant 2 <Bottom right>
+        if (MPParticipantCount >= 2)
         {
             interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.min.y + 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 2, playableArea.min.y + 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.min.y + 2, 0), null);
         }
 
-        // Player 3 <Top right>
-        if (MPPlayerCount >= 3)
+        // Participant 3 <Top right>
+        if (MPParticipantCount >= 3)
         {
             interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.max.y - 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 2, playableArea.max.y - 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.max.y - 2, 0), null);
         }
 
-        // Player 4 <Bottom Left>
-        if (MPPlayerCount == 4)
+        // Participant 4 <Bottom Left>
+        if (MPParticipantCount == 4)
         {
             interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.min.y + 1, 0), null);
             interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 2, playableArea.min.y + 1, 0), null);
@@ -141,13 +143,13 @@ public class GameManager : MonoBehaviour
 
 
 
-        // Instantiate each player and grant them a reference to the interactive tilemap and the destructible tiles (so they can be passed to the spawned bombs)
-        for (int i = 0; i < MPPlayerCount; i++)
+        // Instantiate each participant and grant them a reference to the interactive tilemap and the destructible tiles (so they can be passed to the spawned bombs)
+        for (int i = 0; i < MPParticipantCount; i++)
         {
             Vector3 spawnPoint = new Vector3();
             Vector3 tileWorldDifference = new Vector3(0.5f, 0.5f);
 
-            // Setting the spawn point for each player, and adding them to the current alive players
+            // Setting the spawn point for each participant, and adding them to the current alive participants
             switch (i)
             {
                 case 0:
@@ -164,13 +166,13 @@ public class GameManager : MonoBehaviour
                     break;
             }
 
-            GameObject playerObject = Instantiate(playerPrefabs[i], spawnPoint, Quaternion.identity) as GameObject;
+            GameObject participantObject = Instantiate(participantPrefabs[i], spawnPoint, Quaternion.identity) as GameObject;
 
-            playerObject.GetComponent<PlayerStats>().playerNumber = i + 1;
-            playerObject.GetComponent<PlayerActionController>().Tilemap = interactiveTilemap;
-            playerObject.GetComponent<PlayerActionController>().DestructibleTile = destructibleTile;
+            participantObject.GetComponent<ParticipantStats>().participantNumber = i + 1;
+            participantObject.GetComponent<ParticipantActionController>().Tilemap = interactiveTilemap;
+            participantObject.GetComponent<ParticipantActionController>().DestructibleTile = destructibleTile;
 
-            currentlyAlivePlayers.Add(playerObject.transform);
+            currentlyAliveParticipants.Add(participantObject.transform);
         }
     }
 
@@ -218,6 +220,7 @@ public class GameManager : MonoBehaviour
                 InterfaceHolder.instance.UpdateMenuButtonTextValue("Map", multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length));
                 InterfaceHolder.instance.UpdateMenuButtonTextValue("Duration", MPMatchDurationMinutes.ToString());
                 InterfaceHolder.instance.UpdateMenuButtonTextValue("Players", MPPlayerCount.ToString());
+                InterfaceHolder.instance.UpdateMenuButtonTextValue("AIs", MPAICount.ToString());
                 if (AudioManager.instance.isSoundtrackEnabled == true)
                     InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", "Enabled");
                 else
@@ -253,14 +256,14 @@ public class GameManager : MonoBehaviour
                 }
 
                 // Checks if the players are still alive
-                for(int i = 0; i < currentlyAlivePlayers.Count; i++)
+                for(int i = 0; i < currentlyAliveParticipants.Count; i++)
                 {
-                    if (currentlyAlivePlayers[i] == null || currentlyAlivePlayers[i].GetComponent<UnitStats>().IsAlive == false)
+                    if (currentlyAliveParticipants[i] == null || currentlyAliveParticipants[i].GetComponent<UnitStats>().IsAlive == false)
                     {
-                        currentlyAlivePlayers.Remove(currentlyAlivePlayers[i]);
-                        if (currentlyAlivePlayers.Count <= 1)
+                        currentlyAliveParticipants.Remove(currentlyAliveParticipants[i]);
+                        if (currentlyAliveParticipants.Count <= 1)
                         {
-                            string winner = currentlyAlivePlayers[0].name;
+                            string winner = currentlyAliveParticipants[0].name;
                             winner = winner.Substring(winner.IndexOf("Player_") + "Player_".Length);
                             winner = winner.Replace("(Clone)", "");
 
@@ -314,7 +317,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
         Time.timeScale = 1f;
 
-        currentlyAlivePlayers.Clear();
+        currentlyAliveParticipants.Clear();
 
         gameOver = false;
 
@@ -371,9 +374,24 @@ public class GameManager : MonoBehaviour
         if (MPPlayerCount < 4)
             MPPlayerCount++;
         else
-            MPPlayerCount = 2;
+            MPPlayerCount = 0;
 
+        InterfaceHolder.instance.SetButtonInteractible("StartGame", (2 <= MPParticipantCount && MPParticipantCount <= 4) ? true : false);
         InterfaceHolder.instance.UpdateMenuButtonTextValue("Players", MPPlayerCount.ToString());
+    }
+
+    /// <summary>
+    /// Multiplayer menu select AI number button action
+    /// </summary>
+    public void MenuMPSelectAINumber()
+    {
+        if (MPAICount < 4)
+            MPAICount++;
+        else
+            MPAICount = 0;
+
+        InterfaceHolder.instance.SetButtonInteractible("StartGame", (2 <= MPParticipantCount && MPParticipantCount <= 4) ? true : false);
+        InterfaceHolder.instance.UpdateMenuButtonTextValue("AIs", MPAICount.ToString());
     }
 
     /// <summary>

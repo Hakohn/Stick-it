@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovementController : MonoBehaviour
+public class ParticipantMovementController : MonoBehaviour
 {
     // Component references
     private Rigidbody2D rb2d = null;
     private BoxCollider2D boxCollider = null;
-    private PlayerStats playerStats = null;
+    private ParticipantStats participantStats = null;
 
     // Movement information variables
     private enum MovementMethod { Normal, Tile_Based }
@@ -27,7 +27,7 @@ public class PlayerMovementController : MonoBehaviour
     {
         rb2d = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
-        playerStats = GetComponent<PlayerStats>();
+        participantStats = GetComponent<ParticipantStats>();
 
         CurrentMovementSpeed = DefaultMovementSpeed;
         DestinationTilePosition = rb2d.position;
@@ -80,7 +80,7 @@ public class PlayerMovementController : MonoBehaviour
                 break;
             }
             
-            var objectMovementController = hit.transform.GetComponent<PlayerMovementController>();
+            var objectMovementController = hit.transform.GetComponent<ParticipantMovementController>();
             if (objectMovementController != null && objectMovementController.DestinationTilePosition == auxDestinationPosition)
             {
                 ableToMove = false;
@@ -103,16 +103,16 @@ public class PlayerMovementController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Allow input only if the player is alive
-        if (playerStats.IsAlive)
+        // Allow input only if the participant is alive
+        if (participantStats.IsAlive)
         {
             Vector2 input;
             switch (movementMethod)
             {
                 case MovementMethod.Normal:
-                    // Input based on our player number
+                    // Input based on the participant number
                     // Allow input and attempt moving, no matter if we've reached our destination point or not. We're able to move freely after all, right?
-                    input = new Vector2(Input.GetAxisRaw("Horizontal" + playerStats.playerNumber), Input.GetAxisRaw("Vertical" + playerStats.playerNumber));
+                    input = new Vector2(Input.GetAxisRaw("Horizontal" + participantStats.participantNumber), Input.GetAxisRaw("Vertical" + participantStats.participantNumber));
 
                     if (input != Vector2.zero)
                     {
@@ -127,7 +127,7 @@ public class PlayerMovementController : MonoBehaviour
                     if (rb2d.position == DestinationTilePosition)
                     {
                         // Input based on our player number
-                        input = new Vector2(Input.GetAxisRaw("Horizontal" + playerStats.playerNumber), Input.GetAxisRaw("Vertical" + playerStats.playerNumber));
+                        input = new Vector2(Input.GetAxisRaw("Horizontal" + participantStats.participantNumber), Input.GetAxisRaw("Vertical" + participantStats.participantNumber));
 
                         if (input != Vector2.zero)
                         {

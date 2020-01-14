@@ -2,12 +2,12 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class PlayerActionController : MonoBehaviour
+public class ParticipantActionController : MonoBehaviour
 {
     // Component references
     private Rigidbody2D rb2d = null;
     private BoxCollider2D boxCollider = null;
-    private PlayerStats playerStats = null;
+    private ParticipantStats participantStats = null;
 
     // Bomb placing and tilemaps
     private List<Transform> bombTransforms = null;
@@ -36,7 +36,7 @@ public class PlayerActionController : MonoBehaviour
     {
         rb2d = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
-        playerStats = GetComponent<PlayerStats>();
+        participantStats = GetComponent<ParticipantStats>();
 
         bombTransforms = new List<Transform>();
     }
@@ -46,7 +46,7 @@ public class PlayerActionController : MonoBehaviour
         // Allow input only if the player is alive
         // Also, check if the correct button has been pressed (based on our player number)
         // And also, check if we can still keep placing bombs, based on our maximum number of allowed bombs
-        if (playerStats.IsAlive && ((UncontrollableBombPlacing || (canPlaceBombs && Input.GetButtonDown("Place_Bomb" + playerStats.playerNumber))) && bombTransforms.Count < MaximumBombCount))
+        if (participantStats.IsAlive && (UncontrollableBombPlacing || (canPlaceBombs && Input.GetButtonDown("Place_Bomb" + participantStats.participantNumber))) && bombTransforms.Count < MaximumBombCount)
         {
             // The middle of the tile where we want our bomb to spawn
             Vector2 worldSpawnPos = Tilemap.GetCellCenterWorld(Tilemap.WorldToCell(rb2d.position));
@@ -70,7 +70,7 @@ public class PlayerActionController : MonoBehaviour
                 spawnedBomb.GetComponent<BombController>().Owner = gameObject.name;
 
                 // Allow the player to move through the currently placed bomb, so that we won't get stuck in it.
-                gameObject.GetComponent<PlayerMovementController>().transformsThatAllowCollision.Add(spawnedBomb.transform);
+                gameObject.GetComponent<ParticipantMovementController>().transformsThatAllowCollision.Add(spawnedBomb.transform);
 
                 // Add the spawned bomb to our list of placed bombs, so that we keep track of how many bombs we've already placed
                 bombTransforms.Add(spawnedBomb.transform);
