@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 98f78f8ee94432d459fc3bbb92d292f1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - destructibleTile: {fileID: 11400000, guid: 34aee7ea11d9a214eaef4ef65c66d385, type: 2}
+  - marginTile: {fileID: 11400000, guid: 19cbc08ae5b4e604c86475350aa7b80a, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

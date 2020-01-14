@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: edc619a14e30d434088da28e16e42c62
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - DestructibleTile: {fileID: 11400000, guid: 34aee7ea11d9a214eaef4ef65c66d385, type: 2}
+  - Tilemap: {instanceID: 0}
+  - ExplosionCenter: {fileID: 1566348219908438944, guid: a150e3c55f042664086f197b9fdc80cc,
+      type: 3}
+  - ExplosionLoop: {fileID: 8409465062375470642, guid: c43df6c789029b7438075341327f05b2,
+      type: 3}
+  - ExplosionFinish: {fileID: 6102040550143808926, guid: e06620cf450bb834bb506424df35fafc,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

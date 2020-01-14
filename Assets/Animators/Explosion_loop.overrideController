@@ -1,0 +1,13 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Explosion_loop
+  m_Controller: {fileID: 9100000, guid: a56b91cec614f4e4e9c0ade1e54c6f88, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: fd65293b354f9fd4d8fc8f658c55d426, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 452fc3014b2c9984cbfd0394ecd95487, type: 2}

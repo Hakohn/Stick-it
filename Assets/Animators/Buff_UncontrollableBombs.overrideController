@@ -1,0 +1,13 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Buff_UncontrollableBombs
+  m_Controller: {fileID: 9100000, guid: efba67dc5c5dccb409a95322d3224015, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: 1db12cd82da61ba408984f508a26f278, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 9a5c0cba0c253af43a0c1c07b0905a5e, type: 2}
