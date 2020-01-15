@@ -11,6 +11,7 @@ public class ParticipantActionController : MonoBehaviour
 
     // Bomb placing and tilemaps
     private List<Transform> bombTransforms = null;
+    private bool touchBombRequested = false;
     [SerializeField] private GameObject bombPrefab = null;
     [SerializeField] private LayerMask blockingLayer = 512;
     [HideInInspector] public Tilemap Tilemap = null;
@@ -34,46 +35,94 @@ public class ParticipantActionController : MonoBehaviour
 
     private void Start()
     {
+        // Grab the required components
         rb2d = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
         participantStats = GetComponent<ParticipantStats>();
 
+        // Check if this is the main player
+        if (participantStats.IsMainPlayer)
+        {
+            // If it is, then add the required listeners to the appropriate buttons.
+            InterfaceHolder.instance.IGActionButton.onClick.AddListener(() => touchBombRequested = true);
+        }
+
+        // Create the bomb transform list
         bombTransforms = new List<Transform>();
+    }
+
+    private void PlaceBomb()
+    {
+        // The middle of the tile where we want our bomb to spawn
+        Vector2 worldSpawnPos = Tilemap.GetCellCenterWorld(Tilemap.WorldToCell(rb2d.position));
+
+        // Check if that certain tile is open and available for bomb placement
+        boxCollider.enabled = false;
+        Vector2 direction = (worldSpawnPos - rb2d.position).normalized;
+        float distance = Mathf.Sqrt(Mathf.Pow(worldSpawnPos.x - rb2d.position.x, 2) + Mathf.Pow(worldSpawnPos.y - rb2d.position.y, 2));
+        RaycastHit2D hit = Physics2D.Raycast(rb2d.position, direction, distance);
+        boxCollider.enabled = true;
+
+        // If it is null, it means our path for bomb placing is open, and we're gonna instantiate the bomb and initialize it
+        if (hit.collider == null)
+        {
+            bombPlacingSound.source.Play();
+
+            GameObject spawnedBomb = Instantiate(bombPrefab, worldSpawnPos, Quaternion.identity) as GameObject;
+            spawnedBomb.GetComponent<BombController>().Tilemap = Tilemap;
+            spawnedBomb.GetComponent<BombController>().ExplosionRadius = explosionRadius;
+            spawnedBomb.GetComponent<BombController>().DestructibleTile = DestructibleTile;
+            spawnedBomb.GetComponent<BombController>().Owner = gameObject.name;
+
+            // Allow the player to move through the currently placed bomb, so that we won't get stuck in it.
+            gameObject.GetComponent<ParticipantMovementController>().transformsThatAllowCollision.Add(spawnedBomb.transform);
+
+            // Add the spawned bomb to our list of placed bombs, so that we keep track of how many bombs we've already placed
+            bombTransforms.Add(spawnedBomb.transform);
+        }
     }
 
     private void Update()
     {
-        // Allow input only if the player is alive
-        // Also, check if the correct button has been pressed (based on our player number)
-        // And also, check if we can still keep placing bombs, based on our maximum number of allowed bombs
-        if (participantStats.IsAlive && (UncontrollableBombPlacing || (canPlaceBombs && Input.GetButtonDown("Place_Bomb" + participantStats.participantNumber))) && bombTransforms.Count < MaximumBombCount)
+        // Attempt placing bombs only if it is possible to do so 
+        // (based on our life status and maximum number of allowed bombs)
+        if (participantStats.IsAlive && bombTransforms.Count < MaximumBombCount)
         {
-            // The middle of the tile where we want our bomb to spawn
-            Vector2 worldSpawnPos = Tilemap.GetCellCenterWorld(Tilemap.WorldToCell(rb2d.position));
-
-            // Check if that certain tile is open and available for bomb placement
-            boxCollider.enabled = false;
-            Vector2 direction = (worldSpawnPos - rb2d.position).normalized;
-            float distance = Mathf.Sqrt(Mathf.Pow(worldSpawnPos.x - rb2d.position.x, 2) + Mathf.Pow(worldSpawnPos.y - rb2d.position.y, 2));
-            RaycastHit2D hit = Physics2D.Raycast(rb2d.position, direction, distance);
-            boxCollider.enabled = true;
-
-            // If it is null, it means our path for bomb placing is open, and we're gonna instantiate the bomb and initialize it
-            if (hit.collider == null)
+            // Allow input only if the participant is alive and can freely place bombs
+            // Also, check if the correct button has been pressed (if applicable)
+            if(UncontrollableBombPlacing)
             {
-                bombPlacingSound.source.Play();
+                PlaceBomb();
+            }
+            else
+            {
+                bool input = false;
+                switch (participantStats.ControlType)
+                {
+                    case ParticipantStats.TypeOfControl.Player:
+                        // If it's controlled by a player, let's check what type of
+                        // control is he gonna use.
+                        if(InterfaceHolder.instance.areTouchControlsEnabled)
+                        {
+                            input = touchBombRequested;
+                        }
+                        else
+                        {
+                            input = Input.GetButtonDown("Place_Bomb" + participantStats.participantNumber);
+                        }
+                        break;
+                    case ParticipantStats.TypeOfControl.AI:
+                        // Not implemented... yet!
+                        break;
+                }
 
-                GameObject spawnedBomb = Instantiate(bombPrefab, worldSpawnPos, Quaternion.identity) as GameObject;
-                spawnedBomb.GetComponent<BombController>().Tilemap = Tilemap;
-                spawnedBomb.GetComponent<BombController>().ExplosionRadius = explosionRadius;
-                spawnedBomb.GetComponent<BombController>().DestructibleTile = DestructibleTile;
-                spawnedBomb.GetComponent<BombController>().Owner = gameObject.name;
+                if(input)
+                {
+                    PlaceBomb();
 
-                // Allow the player to move through the currently placed bomb, so that we won't get stuck in it.
-                gameObject.GetComponent<ParticipantMovementController>().transformsThatAllowCollision.Add(spawnedBomb.transform);
-
-                // Add the spawned bomb to our list of placed bombs, so that we keep track of how many bombs we've already placed
-                bombTransforms.Add(spawnedBomb.transform);
+                    // Bomb placement attempted, so set the un-request the bomb
+                    touchBombRequested = false;
+                }
             }
         }
         

@@ -14,6 +14,10 @@ public class InterfaceHolder : MonoBehaviour
     private Transform currentActiveMenu = null;
 
     // In-game interface elements
+    public Joystick IGMovementStick = null;
+    public Button IGActionButton = null;
+    public Button IGPauseButton = null;
+    [HideInInspector] public bool areTouchControlsEnabled = false;
     private TMPro.TextMeshProUGUI IGTimer = null;
 
     private void Awake()
@@ -31,26 +35,37 @@ public class InterfaceHolder : MonoBehaviour
 
     private void Start()
     {
-        // If it contains Menu, it means it's the child that contains all the menus
-        // if it contains IG, it means it's the in-game interface
         for (int i = 0; i < transform.childCount; i++)
         {
+            // If it contains Menu, it means it's the child that contains all the menus
             if (transform.GetChild(i).name.Contains("Menu"))
             {
                 Transform parentTransOfMenus = transform.GetChild(i);
                 for (int j = 0; j < parentTransOfMenus.childCount; j++)
                     menuCategories.Add(parentTransOfMenus.GetChild(j));
             }
+            // if it contains IG, it means it's the in-game interface
             else if (transform.GetChild(i).name.Contains("IG"))
             {
                 Transform parentTransOfIGInterface = transform.GetChild(i);
                 for (int j = 0; j < parentTransOfIGInterface.childCount; j++)
-                   switch(parentTransOfIGInterface.GetChild(j).name)
+                {
+                    switch (parentTransOfIGInterface.GetChild(j).name)
                     {
                         case "Timer":
-                            IGTimer = parentTransOfIGInterface.GetChild(j).GetComponent< TMPro.TextMeshProUGUI>();
+                            IGTimer = parentTransOfIGInterface.GetChild(j).GetComponent<TMPro.TextMeshProUGUI>();
+                            break;
+                        case "MovementStick":
+                            IGMovementStick = parentTransOfIGInterface.GetChild(j).GetComponent<Joystick>();
+                            break;
+                        case "ActionButton":
+                            IGActionButton = parentTransOfIGInterface.GetChild(j).GetComponent<Button>();
+                            break;
+                        case "PauseButton":
+                            IGPauseButton = parentTransOfIGInterface.GetChild(j).GetComponent<Button>();
                             break;
                     }
+                }
             }
         }
 
@@ -74,6 +89,7 @@ public class InterfaceHolder : MonoBehaviour
     /// <returns> Returns a reference to the text component you want to update </returns>
     public void UpdateMenuButtonTextValue(string buttonName, string value, bool completelyChange)
     {
+        bool foundButton = false;
         foreach(TMPro.TextMeshProUGUI text in menuTextMeshes)
         {
             if(text.transform.parent.name.Contains(buttonName))
@@ -87,10 +103,12 @@ public class InterfaceHolder : MonoBehaviour
                     text.text = text.text.Replace(text.text.Substring(text.text.IndexOf(':')), ": " + value);
                 }
 
-                return;
+                foundButton = true;
             }
         }
 
+        if (foundButton)
+            return;
         // If it reaches this point, it didn't find the text we were looking for
         Debug.LogError(buttonName + " button was not found within the active menu!");
     }
@@ -136,9 +154,30 @@ public class InterfaceHolder : MonoBehaviour
         IGTimer.SetText(minuteString + ":" + secondString);
     }
 
+    public bool ToggleTouchControls()
+    {
+        areTouchControlsEnabled = !areTouchControlsEnabled;
+        if(GameManager.instance.GameIsPaused)
+        {
+            SetInGameTouchInterfaceActive(areTouchControlsEnabled);
+        }
+        return areTouchControlsEnabled;
+    }
+
+    public void SetInGameTouchInterfaceActive(bool value)
+    {
+        IGMovementStick.gameObject.SetActive(value);
+        IGActionButton.gameObject.SetActive(value);
+    }
+
     public void SetInGameInterfaceActive(bool value)
     {
+        IGPauseButton.gameObject.SetActive(value);
         IGTimer.gameObject.SetActive(value);
+        if(areTouchControlsEnabled)
+        {
+            SetInGameTouchInterfaceActive(value);
+        }
     }
 
     public void DisableAllActiveMenus()

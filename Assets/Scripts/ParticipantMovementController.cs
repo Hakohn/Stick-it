@@ -101,19 +101,80 @@ public class ParticipantMovementController : MonoBehaviour
         return ableToMove;
     }
 
+    //private Vector2 To4Direction(Vector2 vect)
+    //{
+    //    bool inRange(float min, float a,  float max)
+    //    {
+    //        if(min > max)
+    //        {
+    //            max = min;
+    //            min = max;
+    //        }
+    //        if (min <= a && a < max)
+    //            return true;
+    //        return false;
+    //    }
+
+    //    // Determine direction
+    //    Debug.Log($"Vector: {vect}");
+    //    if (vect.x <= vect.y && vect.y <= -vect.x)
+    //    {
+    //        Debug.Log("Up");
+    //        return Vector2.up;
+    //    }
+    //    else if (vect.x < 0 && inRange(vect.x, -1, 1))
+    //    {
+    //        Debug.Log("Left");
+    //        return Vector2.left;
+    //    }
+    //    else if (-vect.x <= -vect.y && -vect.y <= vect.x)
+    //    {
+    //        Debug.Log("Down");
+    //        return Vector2.down;
+    //    }
+    //    else
+    //    {
+    //        Debug.Log("right");
+    //        return Vector2.right;
+    //    }
+    //}
+
     private void FixedUpdate()
     {
         // Allow input only if the participant is alive
         if (participantStats.IsAlive)
         {
-            Vector2 input;
+            Vector2 input = Vector2.zero;
+            switch (participantStats.ControlType)
+            {
+                case ParticipantStats.TypeOfControl.Player:
+                    if(InterfaceHolder.instance.areTouchControlsEnabled == true && participantStats.IsMainPlayer)
+                    {
+                        input = new Vector2(
+                        InterfaceHolder.instance.IGMovementStick.Horizontal,
+                        InterfaceHolder.instance.IGMovementStick.Vertical
+                        );
+                    }
+                    else
+                    {
+                        input = new Vector2(
+                        Input.GetAxisRaw("Horizontal" + participantStats.participantNumber),
+                        Input.GetAxisRaw("Vertical" + participantStats.participantNumber)
+                        );
+                    }
+
+                    break;
+                case ParticipantStats.TypeOfControl.AI:
+                    // Not implemented... yet!
+                    break;
+            }
+
+            // Now, based on the input we got (if we have), attempt moving
             switch (movementMethod)
             {
                 case MovementMethod.Normal:
                     // Input based on the participant number
-                    // Allow input and attempt moving, no matter if we've reached our destination point or not. We're able to move freely after all, right?
-                    input = new Vector2(Input.GetAxisRaw("Horizontal" + participantStats.participantNumber), Input.GetAxisRaw("Vertical" + participantStats.participantNumber));
-
+                    // Attempt moving, no matter if we've reached our destination point or not. We're able to move freely after all, right?
                     if (input != Vector2.zero)
                     {
                         Direction = input;
@@ -126,9 +187,6 @@ public class ParticipantMovementController : MonoBehaviour
                     // Allow getting input ONLY if we've reached our destination point
                     if (rb2d.position == DestinationTilePosition)
                     {
-                        // Input based on our player number
-                        input = new Vector2(Input.GetAxisRaw("Horizontal" + participantStats.participantNumber), Input.GetAxisRaw("Vertical" + participantStats.participantNumber));
-
                         if (input != Vector2.zero)
                         {
                             Direction = input;

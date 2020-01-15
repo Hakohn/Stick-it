@@ -61,7 +61,17 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         
         // Disable the UI elements who aren't supposed to be shown at this time
-        //pauseMenu.SetActive(false);
+        // And update the required settings based on the system we're using
+        switch(SystemInfo.deviceType)
+        {
+            case DeviceType.Desktop:
+            case DeviceType.Console:
+                InterfaceHolder.instance.areTouchControlsEnabled = false;
+                break;
+            case DeviceType.Handheld:
+                InterfaceHolder.instance.areTouchControlsEnabled = true;
+                break;
+        }
     }
     
 
@@ -169,6 +179,7 @@ public class GameManager : MonoBehaviour
             GameObject participantObject = Instantiate(participantPrefabs[i], spawnPoint, Quaternion.identity) as GameObject;
 
             participantObject.GetComponent<ParticipantStats>().participantNumber = i + 1;
+            participantObject.GetComponent<ParticipantStats>().IsMainPlayer = i + 1 == 1 ? true : false;
             participantObject.GetComponent<ParticipantActionController>().Tilemap = interactiveTilemap;
             participantObject.GetComponent<ParticipantActionController>().DestructibleTile = destructibleTile;
 
@@ -225,6 +236,10 @@ public class GameManager : MonoBehaviour
                     InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", "Enabled");
                 else
                     InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", "Disabled");
+                if (InterfaceHolder.instance.areTouchControlsEnabled == true)
+                    InterfaceHolder.instance.UpdateMenuButtonTextValue("Touch", "Enabled");
+                else
+                    InterfaceHolder.instance.UpdateMenuButtonTextValue("Touch", "Disabled");
 
                 // Disable all menus besides the main one
                 InterfaceHolder.instance.SetActiveMenu("Main", "Main");
@@ -264,7 +279,7 @@ public class GameManager : MonoBehaviour
                         if (currentlyAliveParticipants.Count <= 1)
                         {
                             string winner = currentlyAliveParticipants[0].name;
-                            winner = winner.Substring(winner.IndexOf("Player_") + "Player_".Length);
+                            winner = winner.Substring(winner.IndexOf("Participant_") + "Participant_".Length);
                             winner = winner.Replace("(Clone)", "");
 
                             Debug.Log("Game winner: " + winner);
@@ -407,6 +422,21 @@ public class GameManager : MonoBehaviour
 
 
         InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", updateToString);
+    }
+
+    /// <summary>
+    /// Menu toggle touch controls button action
+    /// </summary>
+    public void MenuOptionsToggleTouch()
+    {
+        string updateToString = null;
+        if (InterfaceHolder.instance.ToggleTouchControls() == true)
+            updateToString = "Enabled";
+        else
+            updateToString = "Disabled";
+
+
+        InterfaceHolder.instance.UpdateMenuButtonTextValue("Touch", updateToString);
     }
 
     /// <summary>

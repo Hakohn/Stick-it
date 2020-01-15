@@ -12,9 +12,13 @@ public class UnitStats : MonoBehaviour
     // Sound variables
     [SerializeField] private Sound deathSound = null;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         deathSound.SetAsAudioSourceToGameObject(gameObject);
+    }
+
+    protected virtual void Start()
+    {
     }
 
     protected virtual void Update()

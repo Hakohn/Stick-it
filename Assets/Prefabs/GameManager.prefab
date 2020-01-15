@@ -46,7 +46,7 @@ MonoBehaviour:
   GameIsPaused: 0
   destructibleTile: {fileID: 11400000, guid: 34aee7ea11d9a214eaef4ef65c66d385, type: 2}
   marginTile: {fileID: 11400000, guid: 19cbc08ae5b4e604c86475350aa7b80a, type: 2}
-  playerPrefabs:
+  participantPrefabs:
   - {fileID: 8185617834372601996, guid: 63212acd1df90f94c9531ddd7eeae9a6, type: 3}
   - {fileID: 8185617834372601996, guid: 4c25c926614c9fc44a99ed94b9024442, type: 3}
   - {fileID: 8185617834372601996, guid: 144f2584c06df8e469ad7c2e93b95e3a, type: 3}
@@ -60,3 +60,4 @@ MonoBehaviour:
   menuScene: MENU_Main
   menuScenePrefix: MENU_
   MPPlayerCount: 2
+  MPAICount: 0
