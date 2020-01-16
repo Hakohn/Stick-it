@@ -120,5 +120,13 @@ MonoBehaviour:
     source: {fileID: 0}
     volume: 0.15
     loop: 1
+  - clip: {fileID: 8300000, guid: f881ef0cc86fbd94b9eaf5b477f78269, type: 3}
+    source: {fileID: 0}
+    volume: 0.35
+    loop: 1
+  - clip: {fileID: 8300000, guid: ae9ee69192c1df54aa4c0540b5208799, type: 3}
+    source: {fileID: 0}
+    volume: 0.35
+    loop: 1
   isSoundtrackEnabled: 1
   themeType: 0
