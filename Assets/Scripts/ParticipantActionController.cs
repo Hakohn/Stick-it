@@ -86,7 +86,7 @@ public class ParticipantActionController : MonoBehaviour
     {
         // Attempt placing bombs only if it is possible to do so 
         // (based on our life status and maximum number of allowed bombs)
-        if (participantStats.IsAlive && bombTransforms.Count < MaximumBombCount)
+        if (participantStats.IsAlive && canPlaceBombs && bombTransforms.Count < MaximumBombCount)
         {
             // Allow input only if the participant is alive and can freely place bombs
             // Also, check if the correct button has been pressed (if applicable)

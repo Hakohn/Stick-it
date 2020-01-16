@@ -106,26 +106,10 @@ public class ParticipantMovementController : MonoBehaviour
         float angle = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
         angle = angle > 0 ? angle : 360 - Mathf.Abs(angle);
 
-        if(45 <= angle && angle < 135)
-        {
-            Debug.Log("Up");
-            return Vector2.up;
-        }
-        else if(135 <= angle && angle < 225)
-        {
-            Debug.Log("Left");
-            return Vector2.left;
-        }
-        else if(225 <= angle && angle < 315)
-        {
-            Debug.Log("Down");
-            return Vector2.down;
-        }
-        else
-        {
-            Debug.Log("Right");
-            return Vector2.right;
-        }
+        if(45 <= angle && angle < 135) return Vector2.up;
+        else if(135 <= angle && angle < 225) return Vector2.left;
+        else if(225 <= angle && angle < 315) return Vector2.down;
+        else return Vector2.right;
     }
 
     private void FixedUpdate()

@@ -76,9 +76,13 @@ public class BombController : MonoBehaviour
 
         if (tile == DestructibleTile)
         {
+            // Destroy the destructible tile
             Tilemap.SetTile(targetCell, null);
+            // Reload the tilemap collider, to fix the weird bug with random invisible walls
+            //var tempTilemapCollider = Tilemap.gameObject.GetComponent<TilemapCollider2D>();
+            //for (int i = 0; i < 2; i++) tempTilemapCollider.usedByComposite = !tempTilemapCollider.usedByComposite;
 
-            // Updating the effect, if hitting a destroyable tile (and so the explosion must finish)
+            // Updating the effect, if hitting a destructible tile (and so the explosion must finish)
             effectToInstantiate = explosionPrefab.finish;
             GameObject auxEffObj = Instantiate(effectToInstantiate, Tilemap.GetCellCenterWorld(targetCell), Quaternion.Euler(new Vector3(0, 0, angle)));
 
