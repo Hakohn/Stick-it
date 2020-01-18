@@ -13,7 +13,9 @@ public class ParticipantActionController : MonoBehaviour
     private List<Transform> bombTransforms = null;
     private bool touchBombRequested = false;
     [SerializeField] private GameObject bombPrefab = null;
+#pragma warning disable IDE0052 // Remove unread private members
     [SerializeField] private LayerMask blockingLayer = 512;
+#pragma warning restore IDE0052 // Remove unread private members
     [HideInInspector] public Tilemap Tilemap = null;
     [HideInInspector] public TileBase DestructibleTile = null;
 
@@ -29,8 +31,7 @@ public class ParticipantActionController : MonoBehaviour
     private void Awake()
     {
         // Using this method only for sounds that are going to be played multiple times while the gameObject is alive
-        if (bombPlacingSound.clip != null)
-            bombPlacingSound.SetAsAudioSourceToGameObject(gameObject);
+        bombPlacingSound.SetAudioSource(gameObject);
     }
 
     private void Start()
@@ -66,7 +67,7 @@ public class ParticipantActionController : MonoBehaviour
         // If it is null, it means our path for bomb placing is open, and we're gonna instantiate the bomb and initialize it
         if (hit.collider == null)
         {
-            bombPlacingSound.source.Play();
+            bombPlacingSound.Play();
 
             GameObject spawnedBomb = Instantiate(bombPrefab, worldSpawnPos, Quaternion.identity) as GameObject;
             spawnedBomb.GetComponent<BombController>().Tilemap = Tilemap;
@@ -119,10 +120,9 @@ public class ParticipantActionController : MonoBehaviour
                 if(input)
                 {
                     PlaceBomb();
-
-                    // Bomb placement attempted, so set the un-request the bomb
-                    touchBombRequested = false;
                 }
+                // Bomb placement attempted, so set the un-request the bomb
+                touchBombRequested = false;
             }
         }
         

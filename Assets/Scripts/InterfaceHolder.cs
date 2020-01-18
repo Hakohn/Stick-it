@@ -14,9 +14,9 @@ public class InterfaceHolder : MonoBehaviour
     private Transform currentActiveMenu = null;
 
     // In-game interface elements
-    public Joystick IGMovementStick = null;
-    public Button IGActionButton = null;
-    public Button IGPauseButton = null;
+    [HideInInspector] public Joystick IGMovementStick = null;
+    [HideInInspector] public Button IGActionButton = null;
+    [HideInInspector] public Button IGPauseButton = null;
     [HideInInspector] public bool areTouchControlsEnabled = false;
     private TMPro.TextMeshProUGUI IGTimer = null;
 

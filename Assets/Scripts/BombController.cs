@@ -129,7 +129,7 @@ public class BombController : MonoBehaviour
         if (timer <= 0)
         {
             // Plays one random the sounds using the audio manager, so that the sound won't be bugged out once this object gets destroyed
-            AudioManager.instance.CreateSoundObject(explosionSounds[Random.Range(0, explosionSounds.Length)], transform.position);
+            AudioManager.CreateSoundObject(explosionSounds[Random.Range(0, explosionSounds.Length)], transform.position);
             
             // Destroy the cells in each direction, unless it hits another bomb
             ExplodeTile(originCell, 0);    // ORIGIN CELL

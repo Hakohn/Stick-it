@@ -14,7 +14,7 @@ public class UnitStats : MonoBehaviour
 
     protected virtual void Awake()
     {
-        deathSound.SetAsAudioSourceToGameObject(gameObject);
+        deathSound.SetAudioSource(gameObject);
     }
 
     protected virtual void Start()
@@ -28,7 +28,7 @@ public class UnitStats : MonoBehaviour
         if(IsAlive == false && lifetime == null)
         {
             // Plays the death sound
-            deathSound.source.Play();
+            deathSound.Play();
 
             // Adds the time 'till corpse despawn to the unit
             lifetime = gameObject.AddComponent<Lifetime>();

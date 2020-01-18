@@ -24,6 +24,6 @@ public class BuffPickup : MonoBehaviour
     {
         // Play the death sound of the buff only if it happens because of a bomb or by despawn timer
         if(!pickedUpByPlayer && (destroyedByExplosion || gameObject.GetComponent<Lifetime>().Seconds <= 0))
-            AudioManager.instance.CreateSoundObject(deathSound, transform.position);
+            AudioManager.CreateSoundObject(deathSound, transform.position);
     }
 }

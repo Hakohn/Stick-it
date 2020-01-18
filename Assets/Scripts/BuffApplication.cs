@@ -32,7 +32,7 @@ public class BuffApplication : MonoBehaviour
 
     private IEnumerator EnumerableStart()
     {
-        AudioManager.instance.CreateSoundObject(pickupSound, GetComponentInParent<Transform>().position);
+        AudioManager.CreateSoundObject(pickupSound, GetComponentInParent<Transform>().position);
 
         // Initialize the references
         lifetime = gameObject.GetComponent<Lifetime>();
@@ -97,7 +97,7 @@ public class BuffApplication : MonoBehaviour
             // let him know that his buff has faded using the audiomanager (so that it won't be disturbed
             // by the fact that we're destroying the object)
             if (lifetime != null && GetComponentInParent<UnitStats>().IsAlive)
-                AudioManager.instance.CreateSoundObject(fadeSound, GetComponentInParent<Transform>().position);
+                AudioManager.CreateSoundObject(fadeSound, GetComponentInParent<Transform>().position);
 
             switch (buffAction)
             {

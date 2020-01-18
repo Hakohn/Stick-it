@@ -17,7 +17,7 @@ public class ParticipantStats : UnitStats
         if (IsAlive == false && committedSuicide && !playedSuicideSound)
         {
             playedSuicideSound = true;
-            AudioManager.instance.CreateSoundObject(suicideSound);
+            AudioManager.CreateSoundObject(suicideSound);
         }
     }
 }

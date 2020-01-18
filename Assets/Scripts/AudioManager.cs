@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
     // General Variables
     public static AudioManager instance;
-    [SerializeField] private Sound[] Sounds = null;
-    private List<Sound> menuSoundtracks = new List<Sound>();
-    private List<string> menuSoundtrackNamesBlacklist = new List<string>();
-    private List<Sound> multiplayerSoundtracks = new List<Sound>();
-    private List<string> multiplayerSoundtrackNamesBlacklist = new List<string>();
+    [SerializeField] private SoundSetHolder soundsetHolder = null;
 
     // Menu variables
-    public bool isSoundtrackEnabled = true;
-    public enum ThemeType { MENU, MULTIPLAYER };
-    public ThemeType themeType = ThemeType.MENU;
+    public bool IsSoundtrackEnabled = true;
+    public SoundCategory soundtrackCategory = SoundCategory.MenuSoundtrack;
 
     // Start is called before the first frame update
     private void Awake()
@@ -31,153 +27,100 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         // Setting up the sounds
-        foreach(Sound sound in Sounds)
-        {
-            if (sound.clip.name.Contains("MenuTheme"))
-                menuSoundtracks.Add(sound);
-            else if (sound.clip.name.Contains("MultiplayerTheme"))
-                multiplayerSoundtracks.Add(sound);
+        foreach(SoundSet set in soundsetHolder.container)
+            foreach(Sound s in set.soundSet)
+            {
+                s.Volume = set.volume;
+                s.Loop = set.loop;
+                s.SetAudioSource(gameObject);
+            }
+    }
 
-            sound.SetAsAudioSourceToGameObject(gameObject);
-        }
+    private bool AnySoundtrackPlaying()
+    {
+        foreach (SoundCategory category in new List<SoundCategory>() { SoundCategory.MenuSoundtrack, SoundCategory.MatchSoundtrack })
+            foreach (Sound s in soundsetHolder[category].soundSet)
+                if (s.IsPlaying)
+                    return true;
+        return false;
     }
 
     private void Update()
     {
-        if(isSoundtrackEnabled)
-        {
-            bool noSoundtrackPlaying = true;
-            switch (themeType)
-            {
-                case ThemeType.MENU:
-                    foreach (Sound soundtrack in menuSoundtracks)
-                        if (soundtrack.source.isPlaying)
-                        {
-                            noSoundtrackPlaying = false;
-                            break;
-                        }
-                        break;
-
-
-                case ThemeType.MULTIPLAYER:
-                    foreach (Sound soundtrack in multiplayerSoundtracks)
-                        if (soundtrack.source.isPlaying)
-                        {
-                            noSoundtrackPlaying = false;
-                            break;
-                        }
-                    break;
-            }
-
-            if (noSoundtrackPlaying)
+        if(IsSoundtrackEnabled)
+            if (AnySoundtrackPlaying() == false)
                 PlayRandomSoundtrack();
-        }
     }
 
     /// <summary>
     /// Play the sound named name found within the AudioManager's array.
     /// </summary>
-    public void PlayGlobalSound(string name)
+    public void PlayGlobalSound(SoundCategory category, string name)
     {
-        Sound s = Array.Find(Sounds, sound => sound.clip.name == name);
+        Sound s = soundsetHolder[category][name];
         if (s != null)
-            s.source.Play();
+        {
+            s.Play();
+        }
         else
-            Debug.LogWarning("The sound named " + name + " could not be found!");
+            Debug.LogWarning($"No sound containing the substring '{name}' could be found in the sound category '{category}'!");
     }
 
     /// <summary>
-    /// Create a temporary empty game object used only for playing the sound sound. The object will automatically despawn once the sound 
+    /// Create a temporary empty game object used only for playing the sound. The object will automatically despawn once the sound 
     /// finished playing.
     /// </summary>
     /// <param name="sound"> The Sound file you wish to play </param>
     /// <param name="position"> The position in world space you want the sound to be played from. This matters only if it is set as a 3D sound. </param>
-    public GameObject CreateSoundObject(Sound sound, Vector3 position)
+    public static GameObject CreateSoundObject(Sound sound, Vector3 position)
     {
         // Create a new gameObject used only for playing the sound
-        GameObject soundObject = new GameObject("[SoundObject]" + sound.clip.name);
+        GameObject soundObject = new GameObject("[SoundObject]" + sound.Name);
         soundObject.transform.position = position;
         
         // Starts playing the sound
-        sound.SetAsAudioSourceToGameObject(soundObject).Play();
+        sound.SetAudioSource(soundObject).Play();
         
         // Give the object a lifetime equal to the duration of the sound
-        soundObject.AddComponent<Lifetime>().Seconds = sound.clip.length;
+        soundObject.AddComponent<Lifetime>().Seconds = sound.Length;
 
         return soundObject;
     }
-    public void CreateSoundObject(Sound sound)
+    public static void CreateSoundObject(Sound sound)
     {
-        CreateSoundObject(sound, Vector3.zero);
+        CreateSoundObject(sound, Camera.main.transform.position);
     }
 
     /// <summary>
-    /// Stop all the sounds containing substring found within the AudioManager's array.
+    /// Stop all the sounds from the given category
     /// </summary>
-    public void StopGlobalSoundsContaining(string substring)
+    public void StopAllGlobalSounds(SoundCategory category)
     {
-        foreach(Sound s in Sounds)
-        {
-            if (s.clip.name.Contains(substring))
-            {
-                s.source.Stop();
-            }
-        }
+        foreach(Sound s in soundsetHolder[category].soundSet)
+            s.Stop();
     }
 
-    public Sound PlayRandomSoundtrack()
+    public void PlayRandomSoundtrack()
     {
-        Sound soundtrackToPlay = null;
-        switch (themeType)
+        var playableSoundtracks = soundsetHolder[soundtrackCategory].soundSet.Where(s => s.AlreadyPlayed == false) as List<Sound>;
+        if (playableSoundtracks == null || playableSoundtracks.Count == 0)
         {
-            case ThemeType.MENU:
-                if (menuSoundtrackNamesBlacklist.Count == menuSoundtracks.Count)
-                    menuSoundtrackNamesBlacklist.Clear();
-
-                do
-                {
-                    soundtrackToPlay = menuSoundtracks[UnityEngine.Random.Range(0, menuSoundtracks.Count)];
-                } while (menuSoundtrackNamesBlacklist.Contains(soundtrackToPlay.clip.name));
-                menuSoundtrackNamesBlacklist.Add(soundtrackToPlay.clip.name);
-
-                soundtrackToPlay.source.Play();
-                break;
-
-
-            case ThemeType.MULTIPLAYER:
-                if (multiplayerSoundtrackNamesBlacklist.Count == multiplayerSoundtracks.Count)
-                    multiplayerSoundtrackNamesBlacklist.Clear();
-
-                do
-                {
-                    soundtrackToPlay = multiplayerSoundtracks[UnityEngine.Random.Range(0, multiplayerSoundtracks.Count)];
-                } while (multiplayerSoundtrackNamesBlacklist.Contains(soundtrackToPlay.clip.name));
-                multiplayerSoundtrackNamesBlacklist.Add(soundtrackToPlay.clip.name);
-
-                soundtrackToPlay.source.Play();
-                break;
+            soundsetHolder[soundtrackCategory].AllSoundsAlreadyPlayed = false;
+            playableSoundtracks = soundsetHolder[soundtrackCategory].soundSet;
         }
-
-        return soundtrackToPlay;
+        playableSoundtracks.ElementAt(UnityEngine.Random.Range(0, playableSoundtracks.Count)).Play();
     }
 
     public void StopAllPlayingSoundtracks()
     {
-        menuSoundtrackNamesBlacklist.Clear();
-        foreach (Sound sound in menuSoundtracks)
-            if (sound.source.isPlaying)
-                sound.source.Stop();
-
-        multiplayerSoundtrackNamesBlacklist.Clear();
-        foreach (Sound sound in multiplayerSoundtracks)
-            if (sound.source.isPlaying)
-                sound.source.Stop();
+        foreach (SoundCategory category in new List<SoundCategory>() { SoundCategory.MenuSoundtrack, SoundCategory.MatchSoundtrack })
+            StopAllGlobalSounds(category);
     }
 
     public bool ToggleSoundtrack()
     {
-        isSoundtrackEnabled = !isSoundtrackEnabled;
-        switch(isSoundtrackEnabled)
+        IsSoundtrackEnabled = !IsSoundtrackEnabled;
+        switch(IsSoundtrackEnabled)
         {
             case false:
                 StopAllPlayingSoundtracks();
@@ -189,6 +132,6 @@ public class AudioManager : MonoBehaviour
                 break;
         }
 
-        return isSoundtrackEnabled;
+        return IsSoundtrackEnabled;
     }
 }
