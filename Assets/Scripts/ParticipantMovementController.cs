@@ -125,8 +125,8 @@ public class ParticipantMovementController : MonoBehaviour
                     if(InterfaceHolder.instance.areTouchControlsEnabled == true && participantStats.IsMainPlayer)
                     {
                         input = new Vector2(
-                        InterfaceHolder.instance.IGMovementStick.Horizontal,
-                        InterfaceHolder.instance.IGMovementStick.Vertical
+                        InterfaceHolder.instance.MovementStick.Horizontal,
+                        InterfaceHolder.instance.MovementStick.Vertical
                         );
                     }
                     else

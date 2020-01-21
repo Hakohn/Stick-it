@@ -45,7 +45,7 @@ public class ParticipantActionController : MonoBehaviour
         if (participantStats.IsMainPlayer)
         {
             // If it is, then add the required listeners to the appropriate buttons.
-            InterfaceHolder.instance.IGActionButton.onClick.AddListener(() => touchBombRequested = true);
+            InterfaceHolder.instance.BombButton.onClick.AddListener(() => touchBombRequested = true);
         }
 
         // Create the bomb transform list

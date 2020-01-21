@@ -8,12 +8,13 @@ public enum SoundCategory { MenuSoundtrack, MatchSoundtrack, Announcer, UI, Envi
 public class Sound
 {
     [SerializeField] 
-    private AudioClip clip;
-    private AudioSource source;
+    private AudioClip clip = null;
+    private AudioSource source = null;
 
     public float Volume { get; set; } = 1f;
     public bool Loop { get; set; } = false;
     public bool AlreadyPlayed { get; set; } = false;
+    public bool IsPaused { get; private set; } = false;
 
     public AudioSource SetAudioSource(GameObject gameObject)
     {
@@ -29,19 +30,21 @@ public class Sound
 
     public void Play() { source.Play(); AlreadyPlayed = true; }
     public void Stop() => source.Stop();
+    public void Pause() { if (source.isPlaying) { source.Pause(); IsPaused = true; } }
+    public void Resume() { if (IsPaused) { source.UnPause(); IsPaused = false; } }
     public bool IsPlaying => source.isPlaying;
     public string Name => clip.name;
     public float Length => clip.length;
 }
 
 [System.Serializable]
-public class SoundSet
+public class SoundList
 {
     public SoundCategory category = SoundCategory.Unknown;
     [Range(0f, 1f)]
     public float volume = 0.25f;
     public bool loop = false;
-    public List<Sound> soundSet = null;
+    public List<Sound> sounds = null;
 
 
     /// <summary>
@@ -50,8 +53,8 @@ public class SoundSet
     /// </summary>
     public bool AllSoundsAlreadyPlayed
     {
-        get => soundSet.All(sound => sound.AlreadyPlayed);
-        set => soundSet.ToList().ForEach(sound => sound.AlreadyPlayed = value);
+        get => sounds.All(sound => sound.AlreadyPlayed);
+        set => sounds.ToList().ForEach(sound => sound.AlreadyPlayed = value);
     }
 
     /// <summary>
@@ -63,16 +66,16 @@ public class SoundSet
     {
         get
         {
-            var sounds = soundSet.Where(s => s.Name.ToLower().Contains(name.ToLower()));
-            return sounds.ElementAt(UnityEngine.Random.Range(0, sounds.Count()));
+            var ans_sounds = this.sounds.Where(s => s.Name.ToLower().Contains(name.ToLower()));
+            return ans_sounds.ElementAt(UnityEngine.Random.Range(0, ans_sounds.Count()));
         }
     }
 }
 
 [System.Serializable]
-public class SoundSetHolder
+public class SoundListHolder
 {
-    [SerializeField] public List<SoundSet> container = null;
+    [SerializeField] public List<SoundList> soundLists = null;
 
-    public SoundSet this[SoundCategory category] => container.First(set => set.category == category);
+    public SoundList this[SoundCategory category] => soundLists.First(list => list.category == category);
 }

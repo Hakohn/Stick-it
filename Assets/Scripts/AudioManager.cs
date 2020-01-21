@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,11 +6,12 @@ public class AudioManager : MonoBehaviour
 {
     // General Variables
     public static AudioManager instance;
-    [SerializeField] private SoundSetHolder soundsetHolder = null;
+    [SerializeField] private SoundListHolder soundsetHolder = null;
 
     // Menu variables
     public bool IsSoundtrackEnabled = true;
     public SoundCategory soundtrackCategory = SoundCategory.MenuSoundtrack;
+    private bool soundtracksPaused = false;
 
     // Start is called before the first frame update
     private void Awake()
@@ -27,8 +27,8 @@ public class AudioManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         // Setting up the sounds
-        foreach(SoundSet set in soundsetHolder.container)
-            foreach(Sound s in set.soundSet)
+        foreach(SoundList set in soundsetHolder.soundLists)
+            foreach(Sound s in set.sounds)
             {
                 s.Volume = set.volume;
                 s.Loop = set.loop;
@@ -39,16 +39,31 @@ public class AudioManager : MonoBehaviour
     private bool AnySoundtrackPlaying()
     {
         foreach (SoundCategory category in new List<SoundCategory>() { SoundCategory.MenuSoundtrack, SoundCategory.MatchSoundtrack })
-            foreach (Sound s in soundsetHolder[category].soundSet)
+            foreach (Sound s in soundsetHolder[category].sounds)
                 if (s.IsPlaying)
                     return true;
         return false;
     }
 
+    public void PauseSoundtracks(bool pauseValue = true)
+    {
+        if (IsSoundtrackEnabled && soundtracksPaused != pauseValue)
+            foreach (Sound s in soundsetHolder[soundtrackCategory].sounds)
+                if (pauseValue == true)
+                {
+                    s.Pause();
+                    soundtracksPaused = true;
+                }
+                else
+                {
+                    s.Resume();
+                    soundtracksPaused = false;
+                }
+    }
+
     private void Update()
     {
-        if(IsSoundtrackEnabled)
-            if (AnySoundtrackPlaying() == false)
+        if(IsSoundtrackEnabled && soundtracksPaused == false && AnySoundtrackPlaying() == false)
                 PlayRandomSoundtrack();
     }
 
@@ -96,19 +111,18 @@ public class AudioManager : MonoBehaviour
     /// </summary>
     public void StopAllGlobalSounds(SoundCategory category)
     {
-        foreach(Sound s in soundsetHolder[category].soundSet)
+        foreach(Sound s in soundsetHolder[category].sounds)
             s.Stop();
     }
 
     public void PlayRandomSoundtrack()
     {
-        var playableSoundtracks = soundsetHolder[soundtrackCategory].soundSet.Where(s => s.AlreadyPlayed == false) as List<Sound>;
-        if (playableSoundtracks == null || playableSoundtracks.Count == 0)
+        if (!(soundsetHolder[soundtrackCategory].sounds.Where(s => s.AlreadyPlayed == false) is List<Sound> playableSoundtracks) || playableSoundtracks.Count == 0)
         {
             soundsetHolder[soundtrackCategory].AllSoundsAlreadyPlayed = false;
-            playableSoundtracks = soundsetHolder[soundtrackCategory].soundSet;
+            playableSoundtracks = soundsetHolder[soundtrackCategory].sounds;
         }
-        playableSoundtracks.ElementAt(UnityEngine.Random.Range(0, playableSoundtracks.Count)).Play();
+        playableSoundtracks.ElementAt(Random.Range(0, playableSoundtracks.Count)).Play();
     }
 
     public void StopAllPlayingSoundtracks()

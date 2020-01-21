@@ -4,13 +4,6 @@ using UnityEngine.Tilemaps;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public enum ButtonAction
-{
-    MenuQuit, MenuPlayGame, MenuSelectMap, MenuMatchDuration, MenuPlayerNumber, MenuAINumber,
-    OptionsToggleSoundtrack, OptionsToggleTouch, 
-    MatchPauseToggle, MatchReturnToMenu
-}
-
 public class GameManager : MonoBehaviour
 {
     #region Variables
@@ -72,15 +65,15 @@ public class GameManager : MonoBehaviour
         // And update the required settings based on the system we're using
         switch(SystemInfo.deviceType)
         {
-            case DeviceType.Desktop: case DeviceType.Console:
-                InterfaceHolder.instance.areTouchControlsEnabled = false;
-                break;
-            case DeviceType.Handheld:
-                InterfaceHolder.instance.areTouchControlsEnabled = true;
-                break;
+            case DeviceType.Desktop: case DeviceType.Console: InterfaceHolder.instance.areTouchControlsEnabled = false; break;
+            case DeviceType.Handheld: InterfaceHolder.instance.areTouchControlsEnabled = true; break;
         }
     }
-    
+
+    private void Start()
+    {
+        UpdateInterfaces();
+    }
 
     private void LoadMultiplayerMap()
     {
@@ -164,18 +157,10 @@ public class GameManager : MonoBehaviour
             // Setting the spawn point for each participant, and adding them to the current alive participants
             switch (i)
             {
-                case 0:
-                    spawnPoint = new Vector3(playableArea.min.x, playableArea.max.y) + Vector3.right + Vector3.down;
-                    break;
-                case 1:
-                    spawnPoint = new Vector3(playableArea.max.x, playableArea.min.y) + Vector3.left + Vector3.up;
-                    break;
-                case 2:
-                    spawnPoint = playableArea.max + Vector3.left + Vector3.down;
-                    break;
-                case 3:
-                    spawnPoint = playableArea.min + Vector3.right + Vector3.up;
-                    break;
+                case 0: spawnPoint = new Vector3(playableArea.min.x, playableArea.max.y) + Vector3.right + Vector3.down; break;
+                case 1: spawnPoint = new Vector3(playableArea.max.x, playableArea.min.y) + Vector3.left + Vector3.up; break;
+                case 2: spawnPoint = playableArea.max + Vector3.left + Vector3.down; break;
+                case 3: spawnPoint = playableArea.min + Vector3.right + Vector3.up; break;
             }
             spawnPoint += tileWorldDifference;
 
@@ -200,11 +185,8 @@ public class GameManager : MonoBehaviour
             // If the active scene is a multiplayer map, load the map based on the multiplayer map loading function
             if(currentlyLoadedScene.Contains(multiplayerScenePrefix))
             {
-                // Disable all the active menus
-                InterfaceHolder.instance.DisableAllActiveMenus();
-                
-                // Enable in-game interface elements
-                InterfaceHolder.instance.SetInGameInterfaceActive(true);
+                // Activate the HUD, and deactivate the rest.
+                InterfaceHolder.instance.SetActiveInterface(InterfaceType.HUD);
 
                 // Load the map
                 LoadMultiplayerMap();
@@ -227,25 +209,8 @@ public class GameManager : MonoBehaviour
             // If it is a menu scene, set the variables up and enable / disable what needs so
             else if(currentlyLoadedScene.Contains(menuScenePrefix))
             {
-                // Disable in-game interface elements
-                InterfaceHolder.instance.SetInGameInterfaceActive(false);
-
-                // Update the texts within the Menu->MultiplayerMenu
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Map", multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length));
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Duration", MPMatchDurationMinutes.ToString());
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Players", MPPlayerCount.ToString());
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("AIs", MPAICount.ToString());
-                if (AudioManager.instance.IsSoundtrackEnabled == true)
-                    InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", "Enabled");
-                else
-                    InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", "Disabled");
-                if (InterfaceHolder.instance.areTouchControlsEnabled == true)
-                    InterfaceHolder.instance.UpdateMenuButtonTextValue("Touch", "Enabled");
-                else
-                    InterfaceHolder.instance.UpdateMenuButtonTextValue("Touch", "Disabled");
-
-                // Disable all menus besides the main one
-                InterfaceHolder.instance.SetActiveMenu("Main", "Main");
+                // Switch to main menu
+                InterfaceHolder.instance.SetActiveInterface(InterfaceType.MainMenu);
                 AudioManager.instance.PlayGlobalSound(SoundCategory.Environment, "Wind");
 
                 // Start the menu theme, stop the others
@@ -262,7 +227,7 @@ public class GameManager : MonoBehaviour
                 // Go to or exit the pause menu
                 if (Input.GetButtonDown("Cancel"))
                     // If the game is paused, unfreeze the time, and hide the pause menu; else, the opposite.
-                    ButtonPress(ButtonAction.MatchPauseToggle);
+                    ButtonPress(ButtonAction.TogglePause);
 
                 // Checks if the players are still alive
                 for(int i = 0; i < currentlyAliveParticipants.Count; i++)
@@ -294,11 +259,11 @@ public class GameManager : MonoBehaviour
                     switch (tKMIndex)
                     {
                         case 0: gameOver = true; Debug.Log("Game winner: Draw!"); break;
-                        case 1: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "10Secs"); break;
-                        case 2: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "30Secs"); break;
-                        case 3: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "1Min"); break;
-                        case 4: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "5Mins"); break;
-                        case 5: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "15Mins"); break;
+                        case 1: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "10s"); break;
+                        case 2: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "30s"); break;
+                        case 3: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "1m"); break;
+                        case 4: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "5m"); break;
+                        case 5: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "15m"); break;
                     }
                     tKMIndex--;
                 }
@@ -313,6 +278,23 @@ public class GameManager : MonoBehaviour
         {
             // Nothing... yet!
         }
+    }
+
+    /// <summary> Update the menu button values, and go back to the main menu. </summary>
+    private void UpdateInterfaces()
+    {
+        var holder_interface = InterfaceHolder.instance; var holder_audio = AudioManager.instance;
+        holder_interface.SetActiveInterface(InterfaceType.MainMenu);
+        holder_interface.SetActiveInterface(InterfaceType.Options, false);
+        holder_interface.ModifyButtonText(InterfaceType.Options, ButtonAction.ToggleSoundtrack, "~" + (holder_audio.IsSoundtrackEnabled ? "On" : "Off"));
+        holder_interface.ModifyButtonText(InterfaceType.Options, ButtonAction.ToggleTouchControls, "~" + (holder_interface.areTouchControlsEnabled ? "On" : "Off"));
+        holder_interface.SetActiveInterface(InterfaceHolder.instance.PreviouslyActiveInterface);
+        holder_interface.SetActiveInterface(InterfaceType.MatchLobby);
+        holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMap, $"~{multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length)}");
+        holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyPlayerNumber, $"~{MPPlayerCount}");
+        holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyAINumber, $"~{MPAICount}");
+        holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMatchDuration, $"~{MPMatchDurationMinutes}");
+        holder_interface.SetActiveInterface(InterfaceHolder.instance.PreviouslyActiveInterface);
     }
 
     private IEnumerator FinishGameAnimation()
@@ -331,67 +313,57 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(menuScene);
     }
 
-    public void ButtonPress(ButtonAction buttonAction)
+    public void ButtonPress(ButtonAction buttonAction, InterfaceType menuToSwitchTo = InterfaceType.None)
     {
         switch(buttonAction)
         {
-            case ButtonAction.MenuQuit:
+            case ButtonAction.Unknown:
+                Debug.LogError("Unknown button action triggered! (Was this on purpose?)");
+                break;
+            case ButtonAction.SwitchInterface:
+                // Disable the active menus and set the requested one to active
+                InterfaceHolder.instance.SetActiveInterface(menuToSwitchTo);
+                break;
+            case ButtonAction.QuitGame:
                 Application.Quit();
                 break;
-            case ButtonAction.MenuPlayGame:
+            case ButtonAction.StartGame:
                 SceneManager.LoadScene(multiplayerScenes[MPSelectedMapIndex]);
                 break;
-            case ButtonAction.MenuSelectMap:
+            case ButtonAction.ModifyMap:
                 MPSelectedMapIndex = MPSelectedMapIndex + 1 < multiplayerScenes.Length ? MPSelectedMapIndex + 1 : 0;
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Map", multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length));
+                InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMap, $"~{multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length)}");
                 break;
-            case ButtonAction.MenuMatchDuration:
+            case ButtonAction.ModifyMatchDuration:
                 MPMatchDurationMinutes = MPMatchDurationMinutes + 3 <= 20 ? MPMatchDurationMinutes + 3 : 3;
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Duration", MPMatchDurationMinutes.ToString());
+                InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMatchDuration, $"~{MPMatchDurationMinutes}");
                 break;
-            case ButtonAction.MenuPlayerNumber:
-                MPPlayerCount = MPPlayerCount < 4 ? MPPlayerCount + 1 : 0;
-                InterfaceHolder.instance.SetButtonInteractible("StartGame", (2 <= MPParticipantCount && MPParticipantCount <= 4) ? true : false);
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Players", MPPlayerCount.ToString());
+            case ButtonAction.ModifyPlayerNumber: case ButtonAction.ModifyAINumber:
+                if(buttonAction == ButtonAction.ModifyPlayerNumber) MPPlayerCount = MPPlayerCount < 4 ? MPPlayerCount + 1 : 0;
+                else MPAICount = MPAICount < 4 ? MPAICount + 1 : 0;
+                InterfaceHolder.instance.ModifyButtonInteraction(InterfaceType.MatchLobby, ButtonAction.StartGame, (2 <= MPParticipantCount && MPParticipantCount <= 4) ? true : false);
+                InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, buttonAction, $"~{(buttonAction == ButtonAction.ModifyPlayerNumber ? MPPlayerCount : MPAICount)}");
                 break;
-            case ButtonAction.MenuAINumber:
-                MPAICount = MPAICount < 4 ? MPAICount + 1 : 0;
-                InterfaceHolder.instance.SetButtonInteractible("StartGame", (2 <= MPParticipantCount && MPParticipantCount <= 4) ? true : false);
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("AIs", MPAICount.ToString());
+            case ButtonAction.ToggleSoundtrack:
+                InterfaceHolder.instance.ModifyButtonText(InterfaceType.Options, ButtonAction.ToggleSoundtrack, "~" + (AudioManager.instance.ToggleSoundtrack() == true ? "On" : "Off"));
                 break;
-            case ButtonAction.OptionsToggleSoundtrack:
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Soundtrack", AudioManager.instance.ToggleSoundtrack() == true ? "Enabled" : "Disabled");
+            case ButtonAction.ToggleTouchControls:
+                InterfaceHolder.instance.ModifyButtonText(InterfaceType.Options, ButtonAction.ToggleTouchControls, "~" + (InterfaceHolder.instance.ToggleTouchControls() == true ? "On" : "Off"));
                 break;
-            case ButtonAction.OptionsToggleTouch:
-                InterfaceHolder.instance.UpdateMenuButtonTextValue("Touch", InterfaceHolder.instance.ToggleTouchControls() == true ? "Enabled" : "Disabled");
-                break;
-            case ButtonAction.MatchPauseToggle:
-                if(GameIsPaused)
-                { // Resume
-                    Time.timeScale = 1f;
-                    InterfaceHolder.instance.DisableAllActiveMenus();
-                }
-                else // Pause
-                {
-                    Time.timeScale = 0f;
-                    InterfaceHolder.instance.SetActiveMenu("Pause", "Main");
-                }
+            case ButtonAction.TogglePause:
                 GameIsPaused = !GameIsPaused;
+                AudioManager.instance.PauseSoundtracks(GameIsPaused);
+                Time.timeScale = GameIsPaused ? 0f : 1f;
+                if(!GameIsPaused) /*Resume*/ InterfaceHolder.instance.SetActiveInterface(InterfaceType.HUD);
+                else /*Pause*/ InterfaceHolder.instance.SetActiveInterface(InterfaceType.Pause, false);
                 break;
-            case ButtonAction.MatchReturnToMenu:
-                ButtonPress(ButtonAction.MatchPauseToggle); // Resuming the game;
+            case ButtonAction.ReturnToMainMenu:
+                ButtonPress(ButtonAction.TogglePause); // Resuming the game;
                 SceneManager.LoadScene(menuScene);
+                break;
+            case ButtonAction.Back:
+                ButtonPress(ButtonAction.SwitchInterface, InterfaceHolder.instance.PreviouslyActiveInterface);
                 break;
         }
     }
-    public void MenuMainQuit() => ButtonPress(ButtonAction.MenuQuit);
-    public void MenuMPPlayGame() => ButtonPress(ButtonAction.MenuPlayGame);
-    public void MenuMPSelectMap() => ButtonPress(ButtonAction.MenuSelectMap);
-    public void MenuMPSelectMatchDuration() => ButtonPress(ButtonAction.MenuMatchDuration);
-    public void MenuMPSelectPlayerNumber() => ButtonPress(ButtonAction.MenuPlayerNumber);
-    public void MenuMPSelectAINumber() => ButtonPress(ButtonAction.MenuAINumber);
-    public void MenuOptionsToggleSoundtrack() => ButtonPress(ButtonAction.OptionsToggleSoundtrack);
-    public void MenuOptionsToggleTouch() => ButtonPress(ButtonAction.OptionsToggleTouch);
-    public void MenuIGTogglePauseGame() => ButtonPress(ButtonAction.MatchPauseToggle);
-    public void MenuIGBackToMenu() => ButtonPress(ButtonAction.MatchReturnToMenu);
 }
