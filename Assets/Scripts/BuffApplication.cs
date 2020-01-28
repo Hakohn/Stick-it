@@ -1,32 +1,32 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+// Buff variable
+public enum BuffAction
+{
+    Unknown,
+    IncreaseBombCount, IncreaseBombRange, IncreaseMovementSpeed,
+    SlowMovement, PauseBombPlacing, UncontrollableBombPlacing
+}
 public class BuffApplication : MonoBehaviour
 {
-    // Buff variable
-    private enum BuffAction
-    {
-        INCREASE_BOMB_COUNT,
-        INCREASE_BOMB_RADIUS,
-        SPEED,
-        SLOW,
-        DENY_BOMB_PLACING,
-        UNCONTROLLABLE_BOMB_PLACING
-    }
-    [SerializeField] private BuffAction buffAction = BuffAction.INCREASE_BOMB_COUNT;
+    // Component references
+    private Lifetime lifetime = null;
+    private ParticipantActionController actionController = null;
+    private ParticipantMovementController movementController = null;
+
+    // Buff type
+    [SerializeField] private BuffAction buffAction = BuffAction.IncreaseBombCount;
 
     // Sound variables
     [SerializeField] private Sound pickupSound = null;
     [SerializeField] private Sound fadeSound = null;
 
-    // Component references
-    private Lifetime lifetime = null;
 
     private void Start()
     {
         // The EnumerableStart is doing exactly what Start was supposed to do, but with the ability to
-        // use the IEnumerator and yield return thingy
+        // use the IEnumerator and yield return thingy (for waiting purposes).
         StartCoroutine(EnumerableStart());
     }
 
@@ -36,55 +36,44 @@ public class BuffApplication : MonoBehaviour
 
         // Initialize the references
         lifetime = gameObject.GetComponent<Lifetime>();
+        actionController = GetComponentInParent<ParticipantActionController>();
+        movementController = GetComponentInParent<ParticipantMovementController>();
 
         // Determine what is this buff supposed to do
         switch (buffAction)
         {
-            case BuffAction.INCREASE_BOMB_COUNT:
-                ParticipantActionController bombPlacer = GetComponentInParent<ParticipantActionController>();
-                if (bombPlacer.MaximumBombCount < 8)
-                    bombPlacer.MaximumBombCount++;
-
+            case BuffAction.IncreaseBombCount:
+                if (actionController.MaximumBombCount < 8) actionController.MaximumBombCount++;
                 Destroy(gameObject);
                 break;
 
-            case BuffAction.INCREASE_BOMB_RADIUS:
-                ParticipantActionController bombRadius = GetComponentInParent<ParticipantActionController>();
-                if (bombRadius.explosionRadius < 5)
-                    bombRadius.explosionRadius++;
-
+            case BuffAction.IncreaseBombRange:
+                if (actionController.explosionRadius < 5) actionController.explosionRadius++;
                 Destroy(gameObject);
                 break;
 
-            case BuffAction.SPEED:
-                ParticipantMovementController movementController1 = GetComponentInParent<ParticipantMovementController>();
-                movementController1.CurrentMovementSpeed *= 2f;
+            case BuffAction.IncreaseMovementSpeed:
+                movementController.CurrentMovementSpeed *= 2f;
                 break;
 
-            case BuffAction.SLOW:
-                ParticipantMovementController movementController2 = GetComponentInParent<ParticipantMovementController>();
-                movementController2.CurrentMovementSpeed /= 2f;
+            case BuffAction.SlowMovement:
+                movementController.CurrentMovementSpeed /= 2f;
                 break;
 
-            case BuffAction.DENY_BOMB_PLACING:
-                ParticipantActionController bombPlacer1 = GetComponentInParent<ParticipantActionController>();
-                bombPlacer1.canPlaceBombs = false;
+            case BuffAction.PauseBombPlacing:
+                actionController.canPlaceBombs = false;
                 break;
 
-            case BuffAction.UNCONTROLLABLE_BOMB_PLACING:
-                ParticipantActionController bombPlacer2 = GetComponentInParent<ParticipantActionController>();
+            case BuffAction.UncontrollableBombPlacing:
                 // Wait a little before starting to place the uncontrollable bombs, so that the user won't get
                 // instantly killed when grabbing the debuff. Also, adds the waiting time to the lifetime, 
                 // so that it will not alter the total duration
                 float waitTime = 2f;
                 lifetime.Seconds += waitTime;
                 yield return new WaitForSeconds(waitTime);
-                bombPlacer2.UncontrollableBombPlacing = true;
+                actionController.UncontrollableBombPlacing = true;
                 break;
-
         }
-
-        
         yield return new WaitForEndOfFrame();
     }
 
@@ -99,26 +88,19 @@ public class BuffApplication : MonoBehaviour
             if (lifetime != null && GetComponentInParent<UnitStats>().IsAlive)
                 AudioManager.CreateSoundObject(fadeSound, GetComponentInParent<Transform>().position);
 
+            // Reverting to the owner's original stats after the buff fade.
             switch (buffAction)
             {
-                case BuffAction.SPEED:
-                    ParticipantMovementController movementController1 = GetComponentInParent<ParticipantMovementController>();
-                    movementController1.CurrentMovementSpeed = movementController1.DefaultMovementSpeed;
+                case BuffAction.IncreaseMovementSpeed: case BuffAction.SlowMovement:
+                    movementController.CurrentMovementSpeed = movementController.DefaultMovementSpeed;
                     break;
 
-                case BuffAction.SLOW:
-                    ParticipantMovementController movementController2 = GetComponentInParent<ParticipantMovementController>();
-                    movementController2.CurrentMovementSpeed = movementController2.DefaultMovementSpeed;
+                case BuffAction.PauseBombPlacing:
+                    actionController.canPlaceBombs = true;
                     break;
 
-                case BuffAction.DENY_BOMB_PLACING:
-                    ParticipantActionController bombPlacer1 = GetComponentInParent<ParticipantActionController>();
-                    bombPlacer1.canPlaceBombs = true;
-                    break;
-
-                case BuffAction.UNCONTROLLABLE_BOMB_PLACING:
-                    ParticipantActionController bombPlacer2 = GetComponentInParent<ParticipantActionController>();
-                    bombPlacer2.UncontrollableBombPlacing = false;
+                case BuffAction.UncontrollableBombPlacing:
+                    actionController.UncontrollableBombPlacing = false;
                     break;
             }
         }

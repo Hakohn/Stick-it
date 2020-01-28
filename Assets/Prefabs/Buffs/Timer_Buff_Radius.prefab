@@ -12,6 +12,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Timer_Buff_Radius
       objectReference: {fileID: 0}
+    - target: {fileID: 3986941068942464930, guid: 75efa6a9f0e9c924d8392b595556c633,
+        type: 3}
+      propertyPath: fadeSound.clip
+      value: 
+      objectReference: {fileID: 8300000, guid: 89f4e5b851dc01848829665f128d65ff, type: 3}
+    - target: {fileID: 3986941068942464930, guid: 75efa6a9f0e9c924d8392b595556c633,
+        type: 3}
+      propertyPath: buffAction
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1112627684085017087, guid: 75efa6a9f0e9c924d8392b595556c633,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -67,16 +77,5 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3986941068942464930, guid: 75efa6a9f0e9c924d8392b595556c633,
-        type: 3}
-      propertyPath: fadeSound.clip
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3986941068942464930, guid: 75efa6a9f0e9c924d8392b595556c633,
-        type: 3}
-      propertyPath: buffAction
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7853370816233640117, guid: 75efa6a9f0e9c924d8392b595556c633, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 75efa6a9f0e9c924d8392b595556c633, type: 3}

@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+public enum MovementType { Normal, OnTiles }
+
 public class ParticipantMovementController : MonoBehaviour
 {
     // Component references
@@ -9,10 +11,7 @@ public class ParticipantMovementController : MonoBehaviour
     private ParticipantStats participantStats = null;
 
     // Movement information variables
-    private enum MovementMethod { Normal, Tile_Based }
-#pragma warning disable IDE0044 // Add readonly modifier
-    [SerializeField] private MovementMethod movementMethod = MovementMethod.Normal;
-#pragma warning restore IDE0044 // Add readonly modifier
+    [SerializeField] private MovementType movementType = MovementType.Normal;
     public Vector2 DestinationTilePosition { get; private set; }
     public Vector2 Direction { get; private set; } = Vector2.down;
     public bool IsMoving { get; private set; } = false;
@@ -36,17 +35,17 @@ public class ParticipantMovementController : MonoBehaviour
     private bool AttemptMoving()
     {
         // The variables we're gonna use, no matter what kind of MovementMethod we're using.
-        var moveDistance = 1f;
-        var ableToMove = true;
+        float moveDistance = 1f;
+        bool ableToMove = true;
 
         // Calculate the distance till our destination point, based on our MovementMethod.
-        switch (movementMethod)
+        switch (movementType)
         {
-            case MovementMethod.Normal:
+            case MovementType.Normal:
                 moveDistance = CurrentMovementSpeed * Time.fixedDeltaTime;
                 break;
 
-            case MovementMethod.Tile_Based:
+            case MovementType.OnTiles:
                 moveDistance = 1f;    
                 break;
         }
@@ -101,7 +100,7 @@ public class ParticipantMovementController : MonoBehaviour
         return ableToMove;
     }
 
-    Vector2 CalculateDirection(Vector2 v)
+    private Vector2 CalculateDirection(Vector2 v)
     {
         float angle = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
         angle = angle > 0 ? angle : 360 - Mathf.Abs(angle);
@@ -119,9 +118,9 @@ public class ParticipantMovementController : MonoBehaviour
         if (participantStats.IsAlive)
         {
             Vector2 input = Vector2.zero;
-            switch (participantStats.ControlType)
+            switch (participantStats.InputSource)
             {
-                case ParticipantStats.TypeOfControl.Player:
+                case InputSource.Player:
                     if(InterfaceHolder.instance.areTouchControlsEnabled == true && participantStats.IsMainPlayer)
                     {
                         input = new Vector2(
@@ -138,15 +137,15 @@ public class ParticipantMovementController : MonoBehaviour
                     }
 
                     break;
-                case ParticipantStats.TypeOfControl.AI:
+                case InputSource.AI:
                     // Not implemented... yet!
                     break;
             }
 
             // Now, based on the input we got (if we have), attempt moving
-            switch (movementMethod)
+            switch (movementType)
             {
-                case MovementMethod.Normal:
+                case MovementType.Normal:
                     // Input based on the participant number
                     // Attempt moving, no matter if we've reached our destination point or not. We're able to move freely after all, right?
                     if (input != Vector2.zero)
@@ -157,7 +156,7 @@ public class ParticipantMovementController : MonoBehaviour
                     }
                     else IsMoving = false;
                     break;
-                case MovementMethod.Tile_Based:
+                case MovementType.OnTiles:
                     // Allow getting input ONLY if we've reached our destination point
                     if (rb2d.position == DestinationTilePosition)
                     {

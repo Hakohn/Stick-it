@@ -13,9 +13,6 @@ public class ParticipantActionController : MonoBehaviour
     private List<Transform> bombTransforms = null;
     private bool touchBombRequested = false;
     [SerializeField] private GameObject bombPrefab = null;
-#pragma warning disable IDE0052 // Remove unread private members
-    [SerializeField] private LayerMask blockingLayer = 512;
-#pragma warning restore IDE0052 // Remove unread private members
     [HideInInspector] public Tilemap Tilemap = null;
     [HideInInspector] public TileBase DestructibleTile = null;
 
@@ -98,29 +95,24 @@ public class ParticipantActionController : MonoBehaviour
             else
             {
                 bool input = false;
-                switch (participantStats.ControlType)
+                switch (participantStats.InputSource)
                 {
-                    case ParticipantStats.TypeOfControl.Player:
+                    case InputSource.Player:
                         // If it's controlled by a player, let's check what type of
                         // control is he gonna use.
                         if(InterfaceHolder.instance.areTouchControlsEnabled)
-                        {
                             input = touchBombRequested;
-                        }
                         else
-                        {
                             input = Input.GetButtonDown("Place_Bomb" + participantStats.participantNumber);
-                        }
                         break;
-                    case ParticipantStats.TypeOfControl.AI:
+                    case InputSource.AI:
                         // Not implemented... yet!
                         break;
                 }
 
                 if(input)
-                {
                     PlaceBomb();
-                }
+
                 // Bomb placement attempted, so set the un-request the bomb
                 touchBombRequested = false;
             }
@@ -129,9 +121,7 @@ public class ParticipantActionController : MonoBehaviour
         // Iterate through our list of bombs, and check if any of them has exploded. If so, remove them from the list and allow some more to be placed
         // Using casual for instead of foreach so that we will not get a null pointer error once we remove an element
         for (int i = 0; i < bombTransforms.Count; i++)
-        {
             if (bombTransforms[i] == null)
                 bombTransforms.RemoveAt(i);
-        }
     }
 }
