@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 5326906158193605869}
   - component: {fileID: 7999026494435858993}
   - component: {fileID: 7387670651271256039}
+  - component: {fileID: 8832770197359150937}
+  - component: {fileID: -2393725963338664663}
   m_Layer: 8
   m_Name: Bomb
   m_TagString: Bomb
@@ -49,6 +51,8 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -60,6 +64,7 @@ SpriteRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -184,10 +189,38 @@ MonoBehaviour:
   - {fileID: 983715740903011464, guid: 046bcd93049e64140b4d66afd70e1746, type: 3}
   explosionSounds:
   - clip: {fileID: 8300000, guid: d6250a77b25e33c4bbb15efe64072e63, type: 3}
-    source: {fileID: 0}
-    volume: 1
-    loop: 0
   - clip: {fileID: 8300000, guid: bcc5440731f46e841bd050474b0818c9, type: 3}
-    source: {fileID: 0}
-    volume: 1
-    loop: 0
+--- !u!114 &8832770197359150937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7020538529665401722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  serverOnly: 0
+  m_AssetId: 
+  hasSpawned: 0
+--- !u!114 &-2393725963338664663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7020538529665401722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f74aedd71d9a4f55b3ce499326d45fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  clientAuthority: 0
+  localPositionSensitivity: 0.01
+  localRotationSensitivity: 0.01
+  localScaleSensitivity: 0.01

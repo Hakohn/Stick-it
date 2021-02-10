@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Mirror;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum MovementType { Normal, OnTiles }
 
-public class ParticipantMovementController : MonoBehaviour
+public class ParticipantMovementController : NetworkBehaviour
 {
     // Component references
     private Rigidbody2D rb2d = null;
@@ -12,7 +13,7 @@ public class ParticipantMovementController : MonoBehaviour
 
     // Movement information variables
     [SerializeField] private MovementType movementType = MovementType.Normal;
-    public Vector2 DestinationTilePosition { get; private set; }
+    public Vector2 DestinationTilePosition { get; set; } = default;
     public Vector2 Direction { get; private set; } = Vector2.down;
     public bool IsMoving { get; private set; } = false;
     public float DefaultMovementSpeed = 3f;
@@ -29,7 +30,12 @@ public class ParticipantMovementController : MonoBehaviour
         participantStats = GetComponent<ParticipantStats>();
 
         CurrentMovementSpeed = DefaultMovementSpeed;
-        DestinationTilePosition = rb2d.position;
+
+        if (GameManager.instance != null)
+        {
+            
+            GameManager.instance.AddParticipant(gameObject, isLocalPlayer);
+        }
     }
 
     private bool AttemptMoving()
@@ -113,15 +119,14 @@ public class ParticipantMovementController : MonoBehaviour
 
     private void FixedUpdate()
     {
-
         // Allow input only if the participant is alive
-        if (participantStats.IsAlive)
+        if (participantStats.IsAlive && isLocalPlayer)
         {
             Vector2 input = Vector2.zero;
             switch (participantStats.InputSource)
             {
                 case InputSource.Player:
-                    if(InterfaceHolder.instance.areTouchControlsEnabled == true && participantStats.IsMainPlayer)
+                    if(InterfaceHolder.instance.areTouchControlsEnabled == true && participantStats.localParticipantNumber == 0)
                     {
                         input = new Vector2(
                         InterfaceHolder.instance.MovementStick.Horizontal,
@@ -131,8 +136,8 @@ public class ParticipantMovementController : MonoBehaviour
                     else
                     {
                         input = new Vector2(
-                        Input.GetAxisRaw("Horizontal" + participantStats.participantNumber),
-                        Input.GetAxisRaw("Vertical" + participantStats.participantNumber)
+                        Input.GetAxisRaw("Horizontal" + participantStats.localParticipantNumber),
+                        Input.GetAxisRaw("Vertical" + participantStats.localParticipantNumber)
                         );
                     }
 

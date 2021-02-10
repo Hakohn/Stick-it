@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MP_Large.unity
     guid: 74915cd38e23ca8408a3f431ac98a2e1
+  - enabled: 1
+    path: Assets/Scenes/MP_Network.unity
+    guid: 0ce7b792f74ff8841abb354aafbb5e79
   m_configObjects: {}

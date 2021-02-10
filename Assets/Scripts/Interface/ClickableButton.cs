@@ -30,17 +30,14 @@ public class ClickableButton : MonoBehaviour
             // If it contains tilda, it means we want only a value change.
             if(value.StartsWith("~"))
             {
-                theValue = value.Substring(1);
-                GetComponent<TextMeshProUGUI>().text = $"{initialText}: {theValue}";
+                GetComponent<TextMeshProUGUI>().text = $"{initialText}: {value.Substring(1)}";
             }
             else // We want a full text change.
             {
-                theValue = null;
                 GetComponent<TextMeshProUGUI>().text = value;
             }
         }
     }
-    [HideInInspector] private string theValue = null;
 
     private void Awake()
     {

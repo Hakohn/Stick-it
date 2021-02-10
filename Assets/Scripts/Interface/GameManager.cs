@@ -3,8 +3,10 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Linq;
+using Mirror;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     #region Variables
     // General variables
@@ -19,31 +21,50 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TileBase destructibleTile = null;
     [SerializeField] private TileBase marginTile = null;
 
+    [Header("Player")]
     [Space][Space]
     // Player Variables
-    [SerializeField] private GameObject[] participantPrefabs = null;
+    [SerializeField] private GameObject participantPrefab = null;
+    [System.Serializable] public struct ParticipantProperties
+	{
+#pragma warning disable IDE1006 // Naming Styles
+		public string name => teamTag;
+#pragma warning restore IDE1006 // Naming Styles
+		[TagSelector] public string teamTag;
+        public RuntimeAnimatorController controller;
+	}
+    [Tooltip("The properties of each player.")]
+    [SerializeField] private ParticipantProperties[] participantProperties = null;
+    [HideInInspector] private Vector3Int[,] spawnPointZones = new Vector3Int[4, 3];
 
+    [Header("Scenes")]
     [Space][Space]
     // Scene management variables
-    private string currentlyLoadedScene = null;
-    [SerializeField] private string[] multiplayerScenes = null;
-    [SerializeField] private string multiplayerScenePrefix = "MP_";
-    [SerializeField] private string menuScene = null;
-    [SerializeField] private string menuScenePrefix = "MENU_";
+    [Scene]
+    private string currentlyLoadedScene = default;
+    [Scene] [SerializeField]
+    private string[] multiplayerScenes = null;
+    private readonly string multiplayerScenePrefix = "MP_";
+    [Scene] [SerializeField]
+    private string menuScene = default;
+    private readonly string menuScenePrefix = "MENU_";
 
+    [Header("Menu Vars")]
     [Space][Space]
-    // Menu variables
     [SerializeField][Range(0, 4)] private int MPPlayerCount = 2;
     [SerializeField][Range(0, 4)] private int MPAICount = 2;
     private int MPParticipantCount => MPPlayerCount + MPAICount;
     private int MPSelectedMapIndex = 2;
     private int MPMatchDurationMinutes = 3;
 
+    [Header("Current Match Vars")]
     [Space][Space]
-    // Current multiplayer match variables
-    private List<Transform> currentlyAliveParticipants = new List<Transform>();
+    private bool enoughPlayersJoined = false;
+    public int LocalPlayerCount { get; private set; } = 0;
+    public int OnlinePlayerCount => currentlyAliveParticipants.Count - LocalPlayerCount;
+    private readonly List<Transform> currentlyAliveParticipants = new List<Transform>();
     private float currentTimeRemaining = 0f;
-    private float[] timeKeyMoments = { 0f, 10f, 30f, 60f * 1, 60f * 5, 60f * 15 };
+    private readonly float[] timeKeyMoments = { 0f, 10f, 30f, 60f * 1, 60f * 5, 60f * 15 };
     private int tKMIndex = 0;
     private bool gameOver = false;
     #endregion
@@ -63,21 +84,28 @@ public class GameManager : MonoBehaviour
         
         // Disable the UI elements who aren't supposed to be shown at this time
         // And update the required settings based on the system we're using
-        switch(SystemInfo.deviceType)
-        {
-            case DeviceType.Desktop: case DeviceType.Console: InterfaceHolder.instance.areTouchControlsEnabled = false; break;
-            case DeviceType.Handheld: InterfaceHolder.instance.areTouchControlsEnabled = true; break;
-        }
+        if(InterfaceHolder.instance != null)
+		{
+            switch(SystemInfo.deviceType)
+            {
+                case DeviceType.Desktop: case DeviceType.Console: InterfaceHolder.instance.areTouchControlsEnabled = false; break;
+                case DeviceType.Handheld: InterfaceHolder.instance.areTouchControlsEnabled = true; break;
+            }
+		}
     }
 
     private void Start()
     {
-        UpdateInterfaces();
+        if(InterfaceHolder.instance != null)
+		{
+            UpdateInterfaces();
+		}
     }
 
     private void LoadMultiplayerMap()
     {
-        interactiveTilemap = GameObject.FindGameObjectWithTag("Tilemap_interactible").GetComponent<Tilemap>();
+		#region Map generation
+		interactiveTilemap = GameObject.FindGameObjectWithTag("Tilemap_interactible").GetComponent<Tilemap>();
 
         // Determine, based on the drawn tilemap, the bounds of the playable area
         for (int i = interactiveTilemap.cellBounds.min.x; i <= interactiveTilemap.cellBounds.max.x; i++)
@@ -112,69 +140,101 @@ public class GameManager : MonoBehaviour
                     interactiveTilemap.SetTile(targetCell, destructibleTile);
             }
 
-        // Clear the starting area for each player (the corners)
-        // Participant 1 <Top left>
-        if (MPParticipantCount >= 1)
-        {
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.max.y - 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 2, playableArea.max.y - 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.max.y - 2, 0), null);
-        }
+		#region Loading spawn points
+		// Clear the starting area for each player (the corners)
+		// Participant 1 <Top left>
+		spawnPointZones[0, 0] = new Vector3Int(playableArea.min.x + 1, playableArea.max.y - 1, 0);
+        spawnPointZones[0, 1] = new Vector3Int(playableArea.min.x + 2, playableArea.max.y - 1, 0);
+        spawnPointZones[0, 2] = new Vector3Int(playableArea.min.x + 1, playableArea.max.y - 2, 0);
 
         // Participant 2 <Bottom right>
-        if (MPParticipantCount >= 2)
-        {
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.min.y + 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 2, playableArea.min.y + 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.min.y + 2, 0), null);
-        }
+        spawnPointZones[1, 0] = new Vector3Int(playableArea.max.x - 1, playableArea.min.y + 1, 0);
+        spawnPointZones[1, 1] = new Vector3Int(playableArea.max.x - 2, playableArea.min.y + 1, 0);
+        spawnPointZones[1, 2] = new Vector3Int(playableArea.max.x - 1, playableArea.min.y + 2, 0);
 
         // Participant 3 <Top right>
-        if (MPParticipantCount >= 3)
-        {
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.max.y - 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 2, playableArea.max.y - 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.max.x - 1, playableArea.max.y - 2, 0), null);
-        }
+        spawnPointZones[2, 0] = new Vector3Int(playableArea.max.x - 1, playableArea.max.y - 1, 0);
+        spawnPointZones[2, 1] = new Vector3Int(playableArea.max.x - 2, playableArea.max.y - 1, 0);
+        spawnPointZones[2, 2] = new Vector3Int(playableArea.max.x - 1, playableArea.max.y - 2, 0);
 
         // Participant 4 <Bottom Left>
-        if (MPParticipantCount == 4)
-        {
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.min.y + 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 2, playableArea.min.y + 1, 0), null);
-            interactiveTilemap.SetTile(new Vector3Int(playableArea.min.x + 1, playableArea.min.y + 2, 0), null);
-        }
+        spawnPointZones[3, 0] = new Vector3Int(playableArea.min.x + 1, playableArea.min.y + 1, 0);
+        spawnPointZones[3, 1] = new Vector3Int(playableArea.min.x + 2, playableArea.min.y + 1, 0);
+        spawnPointZones[3, 2] = new Vector3Int(playableArea.min.x + 1, playableArea.min.y + 2, 0);
+		#endregion
+		#endregion
 
+		#region Player Spawning
+		currentlyAliveParticipants.Clear();
+        LocalPlayerCount = 0;
+        for(int i = 0; i < MPPlayerCount; i++)
+            AddParticipant(Instantiate(participantPrefab), true);
+		#endregion
+	}
 
-
-        // Instantiate each participant and grant them a reference to the interactive tilemap and the destructible tiles (so they can be passed to the spawned bombs)
-        for (int i = 0; i < MPParticipantCount; i++)
-        {
-            Vector3 spawnPoint = new Vector3();
-            Vector3 tileWorldDifference = new Vector3(0.5f, 0.5f);
-
-            
-            // Setting the spawn point for each participant, and adding them to the current alive participants
-            switch (i)
+	public void AddParticipant(GameObject participantObject, bool localPlayer)
+    {
+        // Check if the current player isn't already existing in the game.
+        if(!participantObject.transform.IsFoundIn(currentlyAliveParticipants))
+		{
+            // Check if it has the stats component. If not, then we'll ignore this guy and return/
+            if (participantObject.TryGetComponent(out ParticipantStats stats))
             {
-                case 0: spawnPoint = new Vector3(playableArea.min.x, playableArea.max.y) + Vector3.right + Vector3.down; break;
-                case 1: spawnPoint = new Vector3(playableArea.max.x, playableArea.min.y) + Vector3.left + Vector3.up; break;
-                case 2: spawnPoint = playableArea.max + Vector3.left + Vector3.down; break;
-                case 3: spawnPoint = playableArea.min + Vector3.right + Vector3.up; break;
+                // Updating his stats
+                int i = currentlyAliveParticipants.Count;
+                if (i >= 4)
+                {
+                    Debug.LogError("Too many players have joined the match!" + $"Removing {participantObject}, AKA player {i}...");
+                    Destroy(participantObject);
+                    return;
+			    }
+                stats.participantNumber = i;
+                if (localPlayer)
+                {
+                    stats.localParticipantNumber = LocalPlayerCount;
+                    LocalPlayerCount++;
+                }
+
+                // Updating his action controller
+                if (participantObject.TryGetComponent(out ParticipantActionController actionController))
+                {
+                    actionController.Tilemap = interactiveTilemap;
+                    actionController.DestructibleTile = destructibleTile;
+                }
+                // Updating his name, tag and look.
+                if (participantObject.TryGetComponent(out Animator animator))
+                {
+                    animator.runtimeAnimatorController = participantProperties[i].controller;
+                    animator.tag = participantProperties[i].teamTag;
+                    animator.name = $"Participant_{animator.tag}";
+                }
+
+                // Clearing his spawn area.
+                // Time to clean up the area around the player
+                for(int j = 0; j < 3; j++)
+			    {
+                    interactiveTilemap.SetTile(spawnPointZones[i, j], null);
+			    }
+
+                // Position the player correctly.
+                participantObject.transform.SetPositionAndRotation(spawnPointZones[i, 0] + Vector3.one * 0.5f, Quaternion.identity);
+                if(participantObject.TryGetComponent(out ParticipantMovementController movement))
+				{
+                    movement.DestinationTilePosition = participantObject.transform.position;
+                }
+
+                // Adding him to the bunch.
+                currentlyAliveParticipants.Add(participantObject.transform);
+
+                // Making sure that the match is ready to start.
+                if(currentlyAliveParticipants.Count >= 2)
+				{
+                    enoughPlayersJoined = true;
+                }
             }
-            spawnPoint += tileWorldDifference;
+		}
 
-            GameObject participantObject = Instantiate(participantPrefabs[i], spawnPoint, Quaternion.identity) as GameObject;
-
-            participantObject.GetComponent<ParticipantStats>().participantNumber = i + 1;
-            participantObject.GetComponent<ParticipantStats>().IsMainPlayer = i == 0 ? true : false;
-            participantObject.GetComponent<ParticipantActionController>().Tilemap = interactiveTilemap;
-            participantObject.GetComponent<ParticipantActionController>().DestructibleTile = destructibleTile;
-
-            currentlyAliveParticipants.Add(participantObject.transform);
-        }
     }
-
 
     private void Update()
     {
@@ -193,12 +253,12 @@ public class GameManager : MonoBehaviour
 
                 // Starting the countdown timer. It is measured in minutes, and the timer in seconds, so *60
                 currentTimeRemaining = MPMatchDurationMinutes * 60;
-                // Calculate the time from which the announcer shoul start playing sounds
+                // Calculate the time from which the announcer should start playing sounds
                 tKMIndex = timeKeyMoments.Length - 1;
                 while (timeKeyMoments[tKMIndex] >= currentTimeRemaining && tKMIndex > 0)
                     tKMIndex--;
 
-                // Play the gamemode sound
+                // Play the game mode sound
                 AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "Slayer");
 
                 // Start the match theme, stop the others
@@ -229,48 +289,51 @@ public class GameManager : MonoBehaviour
                     // If the game is paused, unfreeze the time, and hide the pause menu; else, the opposite.
                     ButtonPress(ButtonAction.TogglePause);
 
-                // Checks if the players are still alive
-                for(int i = 0; i < currentlyAliveParticipants.Count; i++)
-                {
-                    if (currentlyAliveParticipants[i] == null || currentlyAliveParticipants[i].GetComponent<UnitStats>().IsAlive == false)
+                if (enoughPlayersJoined)
+				{
+                    // Checks if the players are still alive
+                    for (int i = 0; i < currentlyAliveParticipants.Count; i++)
                     {
-                        currentlyAliveParticipants.Remove(currentlyAliveParticipants[i]);
-                        if (currentlyAliveParticipants.Count <= 1)
+                        if (currentlyAliveParticipants[i] == null || currentlyAliveParticipants[i].GetComponent<UnitStats>().IsAlive == false)
                         {
-                            string winner = currentlyAliveParticipants[0].name;
-                            winner = winner.Substring(winner.IndexOf("Participant_") + "Participant_".Length);
-                            winner = winner.Replace("(Clone)", "");
+                            currentlyAliveParticipants.Remove(currentlyAliveParticipants[i]);
+                            if (currentlyAliveParticipants.Count <= 1)
+                            {
+                                string winner = currentlyAliveParticipants[0]?.name ?? "Unknown";
+                                winner = winner.Substring(winner.IndexOf("Participant_") + "Participant_".Length);
+                                winner = winner.Replace("(Clone)", "");
 
-                            Debug.Log("Game winner: " + winner);
-                            gameOver = true;
+                                Debug.Log("Game winner: " + winner);
+                                gameOver = true;
+                            }
                         }
                     }
-                }
 
-                // Decreasing the time remaining and playing the required sound at key moments
-                if (currentTimeRemaining - Time.deltaTime <= 0) currentTimeRemaining = 0;
-                else currentTimeRemaining -= Time.deltaTime;
+                    // Decreasing the time remaining and playing the required sound at key moments
+                    if (currentTimeRemaining - Time.deltaTime <= 0) currentTimeRemaining = 0;
+                    else currentTimeRemaining -= Time.deltaTime;
 
-                // Update the interface clock value
-                InterfaceHolder.instance.UpdateTimerValue(currentTimeRemaining);
+                    // Update the interface clock value
+                    InterfaceHolder.instance.UpdateTimerValue(currentTimeRemaining);
 
-                if (tKMIndex >= 0 && currentTimeRemaining <= timeKeyMoments[tKMIndex])
-                {
-                    switch (tKMIndex)
+                    if (tKMIndex >= 0 && currentTimeRemaining <= timeKeyMoments[tKMIndex])
                     {
-                        case 0: gameOver = true; Debug.Log("Game winner: Draw!"); break;
-                        case 1: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "10s"); break;
-                        case 2: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "30s"); break;
-                        case 3: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "1m"); break;
-                        case 4: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "5m"); break;
-                        case 5: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "15m"); break;
+                        switch (tKMIndex)
+                        {
+                            case 0: gameOver = true; Debug.Log("Game winner: Draw!"); break;
+                            case 1: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "10s"); break;
+                            case 2: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "30s"); break;
+                            case 3: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "1m"); break;
+                            case 4: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "5m"); break;
+                            case 5: AudioManager.instance.PlayGlobalSound(SoundCategory.Announcer, "15m"); break;
+                        }
+                        tKMIndex--;
                     }
-                    tKMIndex--;
-                }
 
-                // Checks if the game is over, either it be from the death of too many players or from time constraints
-                if (gameOver)
-                    StartCoroutine(FinishGameAnimation());
+                    // Checks if the game is over, either it be from the death of too many players or from time constraints
+                    if (gameOver)
+                        StartCoroutine(FinishGameAnimation());
+				}
             }
         }
 
@@ -283,14 +346,14 @@ public class GameManager : MonoBehaviour
     /// <summary> Update the menu button values, and go back to the main menu. </summary>
     private void UpdateInterfaces()
     {
-        var holder_interface = InterfaceHolder.instance; var holder_audio = AudioManager.instance;
+        InterfaceHolder holder_interface = InterfaceHolder.instance; AudioManager holder_audio = AudioManager.instance;
         holder_interface.SetActiveInterface(InterfaceType.MainMenu);
         holder_interface.SetActiveInterface(InterfaceType.Options, false);
         holder_interface.ModifyButtonText(InterfaceType.Options, ButtonAction.ToggleSoundtrack, "~" + (holder_audio.IsSoundtrackEnabled ? "On" : "Off"));
         holder_interface.ModifyButtonText(InterfaceType.Options, ButtonAction.ToggleTouchControls, "~" + (holder_interface.areTouchControlsEnabled ? "On" : "Off"));
         holder_interface.SetActiveInterface(InterfaceHolder.instance.PreviouslyActiveInterface);
         holder_interface.SetActiveInterface(InterfaceType.MatchLobby);
-        holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMap, $"~{multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length)}");
+        holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMap, $"~{multiplayerScenes[MPSelectedMapIndex].Split('/').Last().Substring(multiplayerScenePrefix.Length).Split('.').First()}");
         holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyPlayerNumber, $"~{MPPlayerCount}");
         holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyAINumber, $"~{MPAICount}");
         holder_interface.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMatchDuration, $"~{MPMatchDurationMinutes}");
@@ -332,16 +395,24 @@ public class GameManager : MonoBehaviour
                 break;
             case ButtonAction.ModifyMap:
                 MPSelectedMapIndex = MPSelectedMapIndex + 1 < multiplayerScenes.Length ? MPSelectedMapIndex + 1 : 0;
-                InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMap, $"~{multiplayerScenes[MPSelectedMapIndex].Substring(multiplayerScenePrefix.Length)}");
+                InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMap, $"~{multiplayerScenes[MPSelectedMapIndex].Split('/').Last().Substring(multiplayerScenePrefix.Length).Split('.').First()}");
                 break;
             case ButtonAction.ModifyMatchDuration:
                 MPMatchDurationMinutes = MPMatchDurationMinutes + 3 <= 20 ? MPMatchDurationMinutes + 3 : 3;
                 InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, ButtonAction.ModifyMatchDuration, $"~{MPMatchDurationMinutes}");
                 break;
             case ButtonAction.ModifyPlayerNumber: case ButtonAction.ModifyAINumber:
-                if(buttonAction == ButtonAction.ModifyPlayerNumber) MPPlayerCount = MPPlayerCount < 4 ? MPPlayerCount + 1 : 0;
-                else MPAICount = MPAICount < 4 ? MPAICount + 1 : 0;
-                InterfaceHolder.instance.ModifyButtonInteraction(InterfaceType.MatchLobby, ButtonAction.StartGame, (2 <= MPParticipantCount && MPParticipantCount <= 4) ? true : false);
+                if(multiplayerScenes[MPSelectedMapIndex].Contains("Network"))
+				{
+                    MPAICount = 0;
+                    MPPlayerCount = 0;
+				}
+                else
+				{
+                    if(buttonAction == ButtonAction.ModifyPlayerNumber) MPPlayerCount = MPPlayerCount < 4 ? MPPlayerCount + 1 : 0;
+                    else MPAICount = MPAICount < 4 ? MPAICount + 1 : 0;
+				}
+                InterfaceHolder.instance.ModifyButtonInteraction(InterfaceType.MatchLobby, ButtonAction.StartGame, ((2 <= MPParticipantCount && MPParticipantCount <= 4) || multiplayerScenes[MPSelectedMapIndex].ToLower().Contains("network")));
                 InterfaceHolder.instance.ModifyButtonText(InterfaceType.MatchLobby, buttonAction, $"~{(buttonAction == ButtonAction.ModifyPlayerNumber ? MPPlayerCount : MPAICount)}");
                 break;
             case ButtonAction.ToggleSoundtrack:

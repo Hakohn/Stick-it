@@ -40,6 +40,7 @@ public class Sound
 [System.Serializable]
 public class SoundList
 {
+    [HideInInspector] public string name;
     public SoundCategory category = SoundCategory.Unknown;
     [Range(0f, 1f)]
     public float volume = 0.25f;

@@ -28,15 +28,28 @@ public class AudioManager : MonoBehaviour
 
         // Setting up the sounds
         foreach(SoundList set in soundsetHolder.soundLists)
+		{
             foreach(Sound s in set.sounds)
+            {
+                s.SetAudioSource(gameObject);
+            }
+		}
+    }
+
+	private void OnValidate()
+	{
+        foreach (SoundList set in soundsetHolder.soundLists)
+        {
+            set.name = set.category.ToString().ToGUIName();
+            foreach (Sound s in set.sounds)
             {
                 s.Volume = set.volume;
                 s.Loop = set.loop;
-                s.SetAudioSource(gameObject);
             }
+        }
     }
 
-    private bool AnySoundtrackPlaying()
+	private bool AnySoundtrackPlaying()
     {
         foreach (SoundCategory category in new List<SoundCategory>() { SoundCategory.MenuSoundtrack, SoundCategory.MatchSoundtrack })
             foreach (Sound s in soundsetHolder[category].sounds)

@@ -11,15 +11,19 @@ GameObject:
   - component: {fileID: 5460321146105448911}
   - component: {fileID: 5927913699365408565}
   - component: {fileID: 6470381167915120291}
+  - component: {fileID: 7673786800837977279}
+  - component: {fileID: 2382139672848249417}
   - component: {fileID: 8156859059735110765}
-  - component: {fileID: 1221301295518417821}
   - component: {fileID: 9197902037200414968}
   - component: {fileID: 563593236}
   - component: {fileID: 2885329169386102329}
   - component: {fileID: 5136807962066259257}
+  - component: {fileID: 8843692469703468505}
+  - component: {fileID: -3962562544695042876}
+  - component: {fileID: 4711859741718160420}
   m_Layer: 8
   m_Name: BASE_Participant
-  m_TagString: Untagged
+  m_TagString: Team_Neutral
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52,6 +56,8 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -97,7 +103,7 @@ Animator:
   m_GameObject: {fileID: 9197902037200414967}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 9feb5bfbe7016634fb91a3f3a8455b0d, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -106,6 +112,48 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!70 &7673786800837977279
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197902037200414967}
+  m_Enabled: 0
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.60179925, y: 0.7027725}
+  m_Direction: 0
+--- !u!61 &2382139672848249417
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197902037200414967}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.6013636, y: 0.69455284}
+  m_EdgeRadius: 0
 --- !u!50 &8156859059735110765
 Rigidbody2D:
   serializedVersion: 4
@@ -127,32 +175,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
---- !u!61 &1221301295518417821
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9197902037200414967}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.35}
-    oldSize: {x: 1.28, y: 1.28}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 0.6, y: 0.7}
-  m_EdgeRadius: 0
 --- !u!114 &9197902037200414968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,7 +187,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c28c50484367d3a42af1eae62ad4c3f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementMethod: 1
+  syncMode: 0
+  syncInterval: 0.1
+  movementType: 0
   DefaultMovementSpeed: 3
   blockingLayer:
     serializedVersion: 2
@@ -185,9 +209,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bombPrefab: {fileID: 7020538529665401722, guid: 62327c80127d04e4b9efcb105f7b0156,
     type: 3}
-  blockingLayer:
-    serializedVersion: 2
-    m_Bits: 256
   Tilemap: {fileID: 0}
   DestructibleTile: {fileID: 0}
   canPlaceBombs: 1
@@ -196,9 +217,6 @@ MonoBehaviour:
   MaximumBombCount: 1
   bombPlacingSound:
     clip: {fileID: 8300000, guid: 22105efa0b863bb459650be2eda50e9f, type: 3}
-    source: {fileID: 0}
-    volume: 0.5
-    loop: 0
 --- !u!114 &2885329169386102329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,13 +245,59 @@ MonoBehaviour:
   IsAlive: 1
   deathSound:
     clip: {fileID: 8300000, guid: ff7d22557d5481742a126f68c5c8d6a7, type: 3}
-    source: {fileID: 0}
-    volume: 0.5
-    loop: 0
+  InputSource: 0
+  localParticipantNumber: 0
   participantNumber: 0
   suicideSound:
     clip: {fileID: 8300000, guid: 0102f0e55ea11d043ac9be83c168723c, type: 3}
-    source: {fileID: 0}
-    volume: 0.25
-    loop: 0
   committedSuicide: 0
+--- !u!114 &8843692469703468505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197902037200414967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  serverOnly: 0
+  m_AssetId: 
+  hasSpawned: 0
+--- !u!114 &-3962562544695042876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197902037200414967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f74aedd71d9a4f55b3ce499326d45fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  clientAuthority: 1
+  localPositionSensitivity: 0.01
+  localRotationSensitivity: 0.01
+  localScaleSensitivity: 0.01
+--- !u!114 &4711859741718160420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9197902037200414967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6f3bf89aa97405989c802ba270f815, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  clientAuthority: 1
+  animator: {fileID: 6470381167915120291}

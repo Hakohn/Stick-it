@@ -45,7 +45,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   soundsetHolder:
     soundLists:
-    - category: 0
+    - name: Menu Soundtrack
+      category: 0
       volume: 0.25
       loop: 0
       sounds:
@@ -53,7 +54,8 @@ MonoBehaviour:
       - clip: {fileID: 8300000, guid: 555d661e8ab7bc94a83a98373da406ad, type: 3}
       - clip: {fileID: 8300000, guid: f881ef0cc86fbd94b9eaf5b477f78269, type: 3}
       - clip: {fileID: 8300000, guid: 4734054fef9a6fe4fa84b05f28d9b019, type: 3}
-    - category: 1
+    - name: Match Soundtrack
+      category: 1
       volume: 0.25
       loop: 0
       sounds:
@@ -62,7 +64,8 @@ MonoBehaviour:
       - clip: {fileID: 8300000, guid: 067a70ccfc0345e49906b7da45eb8968, type: 3}
       - clip: {fileID: 8300000, guid: e4ac02380de5e9e4780ca58b502f8835, type: 3}
       - clip: {fileID: 8300000, guid: da2f21fb28b8b5745b3d45b7d64371e0, type: 3}
-    - category: 2
+    - name: Announcer
+      category: 2
       volume: 0.5
       loop: 0
       sounds:
@@ -84,14 +87,16 @@ MonoBehaviour:
       - clip: {fileID: 8300000, guid: c6dcaeb553313af459f562abbb290cce, type: 3}
       - clip: {fileID: 8300000, guid: e693ebf005a832c4cb2444d087c5c16d, type: 3}
       - clip: {fileID: 8300000, guid: 4cc98f9c90e4a5040adbd65563348676, type: 3}
-    - category: 3
+    - name: UI
+      category: 3
       volume: 0.5
       loop: 0
       sounds:
       - clip: {fileID: 8300000, guid: 93575aca1db34ae47b3f45cf4b665827, type: 3}
       - clip: {fileID: 8300000, guid: a6b8954740f5b564eb7cceb0c983689b, type: 3}
       - clip: {fileID: 8300000, guid: 09bb02df8ca88b64ea92d37f5d2b4845, type: 3}
-    - category: 4
+    - name: Environment
+      category: 4
       volume: 0.35
       loop: 1
       sounds:

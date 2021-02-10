@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Mirror;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class ParticipantActionController : MonoBehaviour
+public class ParticipantActionController : NetworkBehaviour
 {
     // Component references
     private Rigidbody2D rb2d = null;
@@ -39,7 +40,7 @@ public class ParticipantActionController : MonoBehaviour
         participantStats = GetComponent<ParticipantStats>();
 
         // Check if this is the main player
-        if (participantStats.IsMainPlayer)
+        if (participantStats.localParticipantNumber == 0)
         {
             // If it is, then add the required listeners to the appropriate buttons.
             InterfaceHolder.instance.BombButton.onClick.AddListener(() => touchBombRequested = true);
@@ -66,17 +67,19 @@ public class ParticipantActionController : MonoBehaviour
         {
             bombPlacingSound.Play();
 
-            GameObject spawnedBomb = Instantiate(bombPrefab, worldSpawnPos, Quaternion.identity) as GameObject;
-            spawnedBomb.GetComponent<BombController>().Tilemap = Tilemap;
-            spawnedBomb.GetComponent<BombController>().ExplosionRadius = explosionRadius;
-            spawnedBomb.GetComponent<BombController>().DestructibleTile = DestructibleTile;
-            spawnedBomb.GetComponent<BombController>().Owner = gameObject.name;
+            if(Instantiate(bombPrefab, worldSpawnPos, Quaternion.identity).TryGetComponent(out BombController bombController))
+			{
+                bombController.Tilemap = Tilemap;
+                bombController.ExplosionRadius = explosionRadius;
+                bombController.DestructibleTile = DestructibleTile;
+                bombController.Owner = gameObject.name;
 
-            // Allow the player to move through the currently placed bomb, so that we won't get stuck in it.
-            gameObject.GetComponent<ParticipantMovementController>().transformsThatAllowCollision.Add(spawnedBomb.transform);
+                // Allow the player to move through the currently placed bomb, so that we won't get stuck in it.
+                gameObject.GetComponent<ParticipantMovementController>().transformsThatAllowCollision.Add(bombController.transform);
 
-            // Add the spawned bomb to our list of placed bombs, so that we keep track of how many bombs we've already placed
-            bombTransforms.Add(spawnedBomb.transform);
+                // Add the spawned bomb to our list of placed bombs, so that we keep track of how many bombs we've already placed
+                bombTransforms.Add(bombController.transform);
+			}
         }
     }
 
@@ -103,14 +106,14 @@ public class ParticipantActionController : MonoBehaviour
                         if(InterfaceHolder.instance.areTouchControlsEnabled)
                             input = touchBombRequested;
                         else
-                            input = Input.GetButtonDown("Place_Bomb" + participantStats.participantNumber);
+                            input = Input.GetButtonDown("Place_Bomb" + participantStats.localParticipantNumber);
                         break;
                     case InputSource.AI:
                         // Not implemented... yet!
                         break;
                 }
 
-                if(input)
+                if(input && isLocalPlayer)
                     PlaceBomb();
 
                 // Bomb placement attempted, so set the un-request the bomb
