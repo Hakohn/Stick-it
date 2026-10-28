@@ -57,13 +57,23 @@ public class BuffApplication : MonoBehaviour
                 break;
 
             case BuffAction.SPEED:
-                ParticipantMovementController movementController1 = GetComponentInParent<ParticipantMovementController>();
-                movementController1.CurrentMovementSpeed *= 2f;
+                {
+                    var movementController = GetComponentInParent<ParticipantMovementController>();
+                    movementController.CurrentMovementSpeed *= 2f;
+
+                    var animator = GetComponentInParent<Animator>();
+                    animator.speed *= 2f;
+                }
                 break;
 
             case BuffAction.SLOW:
-                ParticipantMovementController movementController2 = GetComponentInParent<ParticipantMovementController>();
-                movementController2.CurrentMovementSpeed /= 2f;
+                {
+                    var movementController = GetComponentInParent<ParticipantMovementController>();
+                    movementController.CurrentMovementSpeed /= 2f;
+
+                    var animator = GetComponentInParent<Animator>();
+                    animator.speed /= 2f;
+                }
                 break;
 
             case BuffAction.DENY_BOMB_PLACING:
@@ -102,23 +112,37 @@ public class BuffApplication : MonoBehaviour
             switch (buffAction)
             {
                 case BuffAction.SPEED:
-                    ParticipantMovementController movementController1 = GetComponentInParent<ParticipantMovementController>();
-                    movementController1.CurrentMovementSpeed = movementController1.DefaultMovementSpeed;
+                    {
+                        var movementController = GetComponentInParent<ParticipantMovementController>();
+                        movementController.CurrentMovementSpeed = movementController.DefaultMovementSpeed;
+
+                        var animator = GetComponentInParent<Animator>();
+                        animator.speed = 1f;
+                    }
                     break;
 
                 case BuffAction.SLOW:
-                    ParticipantMovementController movementController2 = GetComponentInParent<ParticipantMovementController>();
-                    movementController2.CurrentMovementSpeed = movementController2.DefaultMovementSpeed;
+                    {
+                        var movementController = GetComponentInParent<ParticipantMovementController>();
+                        movementController.CurrentMovementSpeed = movementController.DefaultMovementSpeed;
+
+                        var animator = GetComponentInParent<Animator>();
+                        animator.speed = 1f;
+                    }
                     break;
 
                 case BuffAction.DENY_BOMB_PLACING:
-                    ParticipantActionController bombPlacer1 = GetComponentInParent<ParticipantActionController>();
-                    bombPlacer1.canPlaceBombs = true;
+                    {
+                        var bombPlacer = GetComponentInParent<ParticipantActionController>();
+                        bombPlacer.canPlaceBombs = true;
+                    }
                     break;
 
                 case BuffAction.UNCONTROLLABLE_BOMB_PLACING:
-                    ParticipantActionController bombPlacer2 = GetComponentInParent<ParticipantActionController>();
-                    bombPlacer2.UncontrollableBombPlacing = false;
+                    {                    
+                        var bombPlacer = GetComponentInParent<ParticipantActionController>();
+                        bombPlacer.UncontrollableBombPlacing = false;
+                    }
                     break;
             }
         }
